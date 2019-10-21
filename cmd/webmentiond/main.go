@@ -10,7 +10,9 @@ import (
 var logger zerolog.Logger
 
 var rootCmd = &cobra.Command{
-	Use: "webmentiond",
+	Use:           "webmentiond",
+	SilenceUsage:  true,
+	SilenceErrors: true,
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
