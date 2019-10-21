@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/rs/zerolog"
 	"golang.org/x/net/html"
 )
 
@@ -33,6 +34,7 @@ type simpleEndpointDiscoverer struct {
 var linkHeaderRe = regexp.MustCompile("<([^>]+)>;\\s*rel=\"webmention\"")
 
 func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u string) (string, error) {
+	logger := zerolog.Ctx(ctx)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		return "", err
@@ -42,56 +44,64 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 		return "", err
 	}
 	var endpointCandidate string
+	logger.Debug().Msg("Checking for endpoint in header")
 	linkHeader := resp.Header.Get("Link")
 	if matches := linkHeaderRe.FindStringSubmatch(linkHeader); len(matches) > 1 {
 		endpointCandidate = matches[1]
 	}
-	tokenizer := html.NewTokenizer(resp.Body)
-tokenloop:
-	for {
-		tt := tokenizer.Next()
-		if tt == html.ErrorToken {
-			err := tokenizer.Err()
-			if err == io.EOF {
-				break tokenloop
-			}
-			return "", err
-		}
-		if tt == html.StartTagToken {
-			tn, _ := tokenizer.TagName()
-			switch string(tn) {
-			case "a":
-				fallthrough
-			case "link":
-				var rel string
-				var href string
-				for {
-					rawattrkey, attrval, hasMore := tokenizer.TagAttr()
-					attrkey := string(rawattrkey)
-					switch attrkey {
-					case "rel":
-						rel = string(attrval)
-					case "href":
-						href = string(attrval)
-					}
-					if !hasMore {
-						break
-					}
-				}
-				if rel == "webmention" {
-					endpointCandidate = href
+	if endpointCandidate == "" {
+		logger.Debug().Msg("Checking for endpoint in content")
+		tokenizer := html.NewTokenizer(resp.Body)
+	tokenloop:
+		for {
+			tt := tokenizer.Next()
+			switch tt {
+			case html.ErrorToken:
+				err := tokenizer.Err()
+				if err == io.EOF {
 					break tokenloop
 				}
+				return "", err
+			case html.SelfClosingTagToken:
+				fallthrough
+			case html.EndTagToken:
+				fallthrough
+			case html.StartTagToken:
+				tn, _ := tokenizer.TagName()
+				switch string(tn) {
+				case "a":
+					fallthrough
+				case "link":
+					var rel string
+					var href string
+					for {
+						rawattrkey, attrval, hasMore := tokenizer.TagAttr()
+						attrkey := string(rawattrkey)
+						switch attrkey {
+						case "rel":
+							rel = string(attrval)
+						case "href":
+							href = string(attrval)
+						}
+						if !hasMore {
+							break
+						}
+					}
+					if rel == "webmention" {
+						endpointCandidate = href
+						break tokenloop
+					}
+				}
 			}
 		}
+		defer resp.Body.Close()
 	}
-	defer resp.Body.Close()
 	if strings.HasPrefix(endpointCandidate, "/") {
 		baseURL := *req.URL
 		baseURL.Path = endpointCandidate
 		return baseURL.String(), nil
 	}
-	return linkHeader, nil
+	return endpointCandidate, nil
 }
 
 // NewEndpointDiscoverer creates a new EndpointDiscoverer configured
