@@ -20,17 +20,22 @@ var sendCmd = &cobra.Command{
 			Source: args[0],
 			Target: args[1],
 		}
-
-		disc := webmention.NewEndpointDiscoverer()
-		sender := webmention.NewSender()
-		ep, err := disc.DiscoverEndpoint(ctx, mention.Target)
+		ep, err := cmd.Flags().GetString("endpoint")
 		if err != nil {
-			return fmt.Errorf("error while looking for endpoint: %w", err)
+			return fmt.Errorf("failed to parse endpoint from flag: %w", err)
 		}
 		if ep == "" {
-			return fmt.Errorf("%s doesn't expose a webmention endpoint", mention.Target)
+			disc := webmention.NewEndpointDiscoverer()
+			ep, err = disc.DiscoverEndpoint(ctx, mention.Target)
+			if err != nil {
+				return fmt.Errorf("error while looking for endpoint: %w", err)
+			}
+			if ep == "" {
+				return fmt.Errorf("%s doesn't expose a webmention endpoint", mention.Target)
+			}
 		}
-		logger.Info().Msgf("Discovered endpoint: %s", ep)
+		sender := webmention.NewSender()
+		logger.Info().Msgf("Endpoint: %s", ep)
 		if err := sender.Send(ctx, ep, mention); err != nil {
 			return fmt.Errorf("failed to send webmention: %w", err)
 		}
@@ -39,5 +44,6 @@ var sendCmd = &cobra.Command{
 }
 
 func init() {
+	sendCmd.Flags().String("endpoint", "", "Endpoint to send the mention to")
 	rootCmd.AddCommand(sendCmd)
 }
