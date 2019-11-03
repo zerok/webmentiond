@@ -54,6 +54,56 @@ func New(configurators ...Configurator) *Server {
 	return srv
 }
 
+func (srv *Server) StartVerifier(ctx context.Context) {
+	logger := zerolog.Ctx(ctx)
+	go func() {
+		ticker := time.NewTicker(time.Second * 10)
+	loop:
+		for {
+			select {
+			case <-ticker.C:
+				logger.Debug().Msg("Checking for new mentions.")
+				tx, err := srv.cfg.Database.BeginTx(ctx, nil)
+				if err != nil {
+					logger.Error().Err(err).Msg("Failed to open transaction for verifier.")
+					continue loop
+				}
+				m := Mention{}
+				if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", webmentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
+					tx.Rollback()
+					if err == sql.ErrNoRows {
+						logger.Debug().Msg("No open mention found.")
+					} else {
+						logger.Error().Err(err).Msg("Failed to fetch new mention.")
+					}
+					continue loop
+				}
+				newStatus := webmentionStatusVerified
+				if err := webmention.Verify(ctx, webmention.Mention{
+					Source: m.Source,
+					Target: m.Target,
+				}); err != nil {
+					logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
+					newStatus = webmentionStatusInvalid
+				}
+				if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
+					tx.Rollback()
+					logger.Error().Err(err).Msg("Failed to update mention.")
+				} else {
+					if err := tx.Commit(); err != nil {
+						tx.Rollback()
+						logger.Error().Err(err).Msg("Failed to commit mention update.")
+					}
+					logger.Info().Msgf("Updated %s (%s -> %s) with status %s", m.ID, m.Source, m.Target, newStatus)
+				}
+				continue loop
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+}
+
 // MigrateDatabase tries to update the underlying database to the
 // latest version.
 func (srv *Server) MigrateDatabase(ctx context.Context) error {
@@ -89,6 +139,7 @@ func (srv *Server) sendServerError(ctx context.Context, w http.ResponseWriter, s
 type Mention struct {
 	ID        string `json:"id"`
 	Source    string `json:"source"`
+	Target    string `json:"target"`
 	CreatedAt string `json:"created_at"`
 	Status    string `json:"status,omitempty"`
 }

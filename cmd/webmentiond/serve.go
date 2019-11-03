@@ -53,6 +53,7 @@ var serveCmd = &cobra.Command{
 		httpSrv := http.Server{}
 		httpSrv.Addr = addr
 		httpSrv.Handler = srv
+		srv.StartVerifier(ctx)
 		logger.Info().Msgf("Listening on %s...", addr)
 		return httpSrv.ListenAndServe()
 	},

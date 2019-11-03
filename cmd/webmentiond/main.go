@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 	},
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
-		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger()
+		logger = zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).With().Timestamp().Logger().Level(zerolog.InfoLevel)
 		if ok, _ := cmd.Flags().GetBool("verbose"); ok {
 			logger = logger.Level(zerolog.DebugLevel)
 		}

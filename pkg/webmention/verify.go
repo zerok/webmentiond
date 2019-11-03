@@ -9,6 +9,22 @@ import (
 	"golang.org/x/net/html"
 )
 
+// Verify uses a basic HTTP client and a default Verifier.
+func Verify(ctx context.Context, mention Mention) error {
+	client := &http.Client{}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mention.Source, nil)
+	if err != nil {
+		return err
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	v := NewVerifier()
+	defer resp.Body.Close()
+	return v.Verify(ctx, resp, resp.Body, mention)
+}
+
 // Verifier is used to check if a given response body produced by
 // fetching mention.Source contains a link to mention.Target.
 type Verifier interface {
