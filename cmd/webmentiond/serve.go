@@ -21,6 +21,10 @@ var serveCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
+		allowedTargetDomains, err := cmd.Flags().GetStringSlice("allowed-target-domains")
+		if err != nil {
+			return err
+		}
 		dbpath, err := cmd.Flags().GetString("database")
 		if err != nil {
 			return err
@@ -46,6 +50,7 @@ var serveCmd = &cobra.Command{
 			c.Context = ctx
 			c.Database = db
 			c.MigrationsFolder = migrationsFolder
+			c.Receiver.TargetPolicy = server.RequestPolicyAllowHost(allowedTargetDomains...)
 		})
 		if err := srv.MigrateDatabase(ctx); err != nil {
 			return err
@@ -63,5 +68,6 @@ func init() {
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")
 	serveCmd.Flags().String("addr", "127.0.0.1:8080", "Address to listen on for HTTP requests")
 	serveCmd.Flags().String("database-migrations", "./pkg/server/migrations", "Path to the database migrations")
+	serveCmd.Flags().StringSlice("allowed-target-domains", []string{}, "Domain name that are accepted as targets")
 	rootCmd.AddCommand(serveCmd)
 }

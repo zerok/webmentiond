@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"time"
 
 	"github.com/go-chi/chi"
@@ -54,6 +55,44 @@ func New(configurators ...Configurator) *Server {
 	return srv
 }
 
+// VerifyNextMention tries to take the next pending mention from the
+// database and tries to verify it.
+func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
+	logger := zerolog.Ctx(ctx)
+	logger.Debug().Msg("Checking for new mentions.")
+	tx, err := srv.cfg.Database.BeginTx(ctx, nil)
+	if err != nil {
+		return false, err
+	}
+	m := Mention{}
+	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", webmentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
+		tx.Rollback()
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
+		return false, err
+	}
+	newStatus := webmentionStatusVerified
+	if err := webmention.Verify(ctx, webmention.Mention{
+		Source: m.Source,
+		Target: m.Target,
+	}); err != nil {
+		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
+		newStatus = webmentionStatusInvalid
+	}
+	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
+		tx.Rollback()
+		return true, err
+	} else {
+		if err := tx.Commit(); err != nil {
+			tx.Rollback()
+			return true, err
+		}
+		logger.Info().Msgf("%s -> %s verified", m.Source, m.Target)
+		return true, nil
+	}
+}
+
 func (srv *Server) StartVerifier(ctx context.Context) {
 	logger := zerolog.Ctx(ctx)
 	go func() {
@@ -62,39 +101,8 @@ func (srv *Server) StartVerifier(ctx context.Context) {
 		for {
 			select {
 			case <-ticker.C:
-				logger.Debug().Msg("Checking for new mentions.")
-				tx, err := srv.cfg.Database.BeginTx(ctx, nil)
-				if err != nil {
-					logger.Error().Err(err).Msg("Failed to open transaction for verifier.")
-					continue loop
-				}
-				m := Mention{}
-				if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", webmentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
-					tx.Rollback()
-					if err == sql.ErrNoRows {
-						logger.Debug().Msg("No open mention found.")
-					} else {
-						logger.Error().Err(err).Msg("Failed to fetch new mention.")
-					}
-					continue loop
-				}
-				newStatus := webmentionStatusVerified
-				if err := webmention.Verify(ctx, webmention.Mention{
-					Source: m.Source,
-					Target: m.Target,
-				}); err != nil {
-					logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
-					newStatus = webmentionStatusInvalid
-				}
-				if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
-					tx.Rollback()
-					logger.Error().Err(err).Msg("Failed to update mention.")
-				} else {
-					if err := tx.Commit(); err != nil {
-						tx.Rollback()
-						logger.Error().Err(err).Msg("Failed to commit mention update.")
-					}
-					logger.Info().Msgf("Updated %s (%s -> %s) with status %s", m.ID, m.Source, m.Target, newStatus)
+				if _, err := srv.VerifyNextMention(ctx); err != nil {
+					logger.Error().Err(err).Msg("Failed to process mention")
 				}
 				continue loop
 			case <-ctx.Done():
@@ -132,6 +140,8 @@ func (srv *Server) sendServerError(ctx context.Context, w http.ResponseWriter, s
 	logger := zerolog.Ctx(ctx)
 	if status >= 500 {
 		logger.Error().Err(err).Msg("Processing failed")
+	} else {
+		logger.Debug().Err(err).Msg("Processing failed")
 	}
 	http.Error(w, "Error", status)
 }
@@ -193,6 +203,12 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 		srv.sendServerError(ctx, w, http.StatusBadRequest, err)
 		return
 	}
+	if srv.cfg.Receiver.TargetPolicy != nil {
+		if !srv.cfg.Receiver.TargetPolicy(httptest.NewRequest(http.MethodGet, m.Target, nil)) {
+			srv.sendServerError(ctx, w, http.StatusBadRequest, fmt.Errorf("target domain not allowed"))
+			return
+		}
+	}
 	tx, err := srv.cfg.Database.BeginTx(ctx, nil)
 	if err != nil {
 		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
@@ -203,10 +219,13 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 	if _, err = tx.ExecContext(ctx, "insert into webmentions (id, source, target, created_at) VALUES (?, ?, ?, ?)", id.String(), m.Source, m.Target, now.Format(time.RFC3339)); err != nil {
 		tx.Rollback()
 		if e, ok := err.(sqlite3.Error); ok && e.Code == sqlite3.ErrConstraint {
-			srv.sendServerError(ctx, w, http.StatusBadRequest, err)
-		} else {
-			srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+			// TODO: The mention already exists. Set the
+			// re-check pending status so that it gets
+			// verified again at the next best occasion.
+			w.WriteHeader(201)
+			return
 		}
+		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
 		return
 	}
 	if err := tx.Commit(); err != nil {

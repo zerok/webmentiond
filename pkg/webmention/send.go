@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+
+	"github.com/rs/zerolog"
 )
 
 // SenderConfiguration allows to inject a custom HTTP Client into the
@@ -43,18 +45,20 @@ func NewSender(configurators ...SenderConfigurator) Sender {
 }
 
 func (s *simpleSender) Send(ctx context.Context, endpoint string, mention Mention) error {
+	logger := zerolog.Ctx(ctx)
 	v := url.Values{}
 	v.Set("source", mention.Source)
 	v.Set("target", mention.Target)
 	data := v.Encode()
 	r, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewBufferString(data))
-	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return err
 	}
+	logger.Debug().Msgf("Sending mention: %v", r)
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := s.client.Do(r)
 	if err != nil {
-		return err
+		return fmt.Errorf("webmention request failed: %w", err)
 	}
 	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated {
 		return fmt.Errorf("unexpected status code returned: %v", resp.StatusCode)

@@ -9,7 +9,7 @@ import (
 
 type RequestPolicy func(*http.Request) bool
 
-func RequestPolicyAllowHost(host string) RequestPolicy {
+func RequestPolicyAllowHost(hosts ...string) RequestPolicy {
 	return func(r *http.Request) bool {
 		if r.URL == nil {
 			return false
@@ -21,7 +21,12 @@ func RequestPolicyAllowHost(host string) RequestPolicy {
 		case "https":
 			rh = strings.TrimSuffix(rh, ":443")
 		}
-		return rh == host
+		for _, host := range hosts {
+			if rh == host {
+				return true
+			}
+		}
+		return false
 	}
 }
 
