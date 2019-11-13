@@ -6,17 +6,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
-	"time"
 
 	"github.com/go-chi/chi"
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"github.com/mattn/go-sqlite3"
-	"github.com/rs/xid"
 	"github.com/rs/zerolog"
-	"github.com/zerok/webmentiond/pkg/webmention"
 )
 
 const webmentionStatusNew = "new"
@@ -53,63 +48,6 @@ func New(configurators ...Configurator) *Server {
 	srv.router.Post("/receive", srv.handleReceive)
 	srv.router.Get("/get", srv.handleGet)
 	return srv
-}
-
-// VerifyNextMention tries to take the next pending mention from the
-// database and tries to verify it.
-func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
-	logger := zerolog.Ctx(ctx)
-	logger.Debug().Msg("Checking for new mentions.")
-	tx, err := srv.cfg.Database.BeginTx(ctx, nil)
-	if err != nil {
-		return false, err
-	}
-	m := Mention{}
-	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", webmentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
-		tx.Rollback()
-		if err == sql.ErrNoRows {
-			return false, nil
-		}
-		return false, err
-	}
-	newStatus := webmentionStatusVerified
-	if err := webmention.Verify(ctx, webmention.Mention{
-		Source: m.Source,
-		Target: m.Target,
-	}); err != nil {
-		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
-		newStatus = webmentionStatusInvalid
-	}
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
-		tx.Rollback()
-		return true, err
-	} else {
-		if err := tx.Commit(); err != nil {
-			tx.Rollback()
-			return true, err
-		}
-		logger.Info().Msgf("%s -> %s verified", m.Source, m.Target)
-		return true, nil
-	}
-}
-
-func (srv *Server) StartVerifier(ctx context.Context) {
-	logger := zerolog.Ctx(ctx)
-	go func() {
-		ticker := time.NewTicker(time.Second * 10)
-	loop:
-		for {
-			select {
-			case <-ticker.C:
-				if _, err := srv.VerifyNextMention(ctx); err != nil {
-					logger.Error().Err(err).Msg("Failed to process mention")
-				}
-				continue loop
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
 }
 
 // MigrateDatabase tries to update the underlying database to the
@@ -192,45 +130,4 @@ func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(mentions)
-}
-
-// handleReceive adds a new mention to the database in the "new"
-// state.
-func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	m, err := webmention.ExtractMention(r)
-	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusBadRequest, err)
-		return
-	}
-	if srv.cfg.Receiver.TargetPolicy != nil {
-		if !srv.cfg.Receiver.TargetPolicy(httptest.NewRequest(http.MethodGet, m.Target, nil)) {
-			srv.sendServerError(ctx, w, http.StatusBadRequest, fmt.Errorf("target domain not allowed"))
-			return
-		}
-	}
-	tx, err := srv.cfg.Database.BeginTx(ctx, nil)
-	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
-	now := time.Now()
-	id := xid.New()
-	if _, err = tx.ExecContext(ctx, "insert into webmentions (id, source, target, created_at) VALUES (?, ?, ?, ?)", id.String(), m.Source, m.Target, now.Format(time.RFC3339)); err != nil {
-		tx.Rollback()
-		if e, ok := err.(sqlite3.Error); ok && e.Code == sqlite3.ErrConstraint {
-			// TODO: The mention already exists. Set the
-			// re-check pending status so that it gets
-			// verified again at the next best occasion.
-			w.WriteHeader(201)
-			return
-		}
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
-		return
-	}
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
-	}
-	w.WriteHeader(201)
 }
