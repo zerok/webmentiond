@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/go-chi/chi"
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/rs/zerolog"
+	"github.com/zerok/webmentiond/pkg/mailer"
 )
 
 const webmentionStatusNew = "new"
@@ -23,8 +25,11 @@ const webmentionStatusRejected = "rejected"
 // Server implements the http.Handler interface and deals with
 // inserting new webmentions into the database.
 type Server struct {
-	cfg    Configuration
-	router chi.Router
+	cfg             Configuration
+	router          chi.Router
+	validToken      map[string]string
+	validTokenMutex sync.RWMutex
+	mailer          mailer.Mailer
 }
 
 func New(configurators ...Configurator) *Server {
@@ -33,8 +38,10 @@ func New(configurators ...Configurator) *Server {
 		configurator(&cfg)
 	}
 	srv := &Server{
-		router: chi.NewRouter(),
-		cfg:    cfg,
+		router:     chi.NewRouter(),
+		cfg:        cfg,
+		validToken: make(map[string]string),
+		mailer:     cfg.Mailer,
 	}
 	if cfg.Context != nil {
 		ctx := cfg.Context
@@ -46,6 +53,8 @@ func New(configurators ...Configurator) *Server {
 		})
 	}
 	srv.router.Post("/receive", srv.handleReceive)
+	srv.router.Post("/request-login", srv.handleLogin)
+	srv.router.Post("/authenticate", srv.handleAuthenticate)
 	srv.router.Get("/get", srv.handleGet)
 	return srv
 }
@@ -74,16 +83,6 @@ func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	srv.router.ServeHTTP(w, r)
 }
 
-func (srv *Server) sendServerError(ctx context.Context, w http.ResponseWriter, status int, err error) {
-	logger := zerolog.Ctx(ctx)
-	if status >= 500 {
-		logger.Error().Err(err).Msg("Processing failed")
-	} else {
-		logger.Debug().Err(err).Msg("Processing failed")
-	}
-	http.Error(w, "Error", status)
-}
-
 type Mention struct {
 	ID        string `json:"id"`
 	Source    string `json:"source"`
@@ -97,25 +96,25 @@ type Mention struct {
 func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	if err := r.ParseForm(); err != nil {
-		srv.sendServerError(ctx, w, http.StatusBadRequest, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: err})
 		return
 	}
 	target := r.Form.Get("target")
 	if target == "" {
-		srv.sendServerError(ctx, w, http.StatusBadRequest, fmt.Errorf("no target specified"))
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("no target specified")})
 		return
 	}
 	tx, err := srv.cfg.Database.BeginTx(ctx, &sql.TxOptions{
 		ReadOnly: true,
 	})
 	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
 	defer tx.Rollback()
 	rows, err := tx.QueryContext(ctx, "select id, source, created_at, status from webmentions where status = ? and target = ? order by created_at", webmentionStatusAccepted, target)
 	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
 	defer rows.Close()
@@ -123,7 +122,7 @@ func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		m := Mention{}
 		if err := rows.Scan(&m.ID, &m.Source, &m.CreatedAt, &m.Status); err != nil {
-			srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 			return
 		}
 		mentions = append(mentions, m)

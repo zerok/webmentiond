@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
+
+	"github.com/zerok/webmentiond/pkg/mailer"
 )
 
 type RequestPolicy func(*http.Request) bool
@@ -36,12 +38,20 @@ type ReceiverConfiguration struct {
 
 type SenderConfiguration struct{}
 
+type AuthConfiguration struct {
+	AdminEmails []string
+	JWTSecret   string
+}
+
 type Configuration struct {
 	Context          context.Context
 	Database         *sql.DB
 	MigrationsFolder string
 	Receiver         ReceiverConfiguration
 	Sender           SenderConfiguration
+	Auth             AuthConfiguration
+	MailFrom         string
+	Mailer           mailer.Mailer
 }
 
 type Configurator func(c *Configuration)

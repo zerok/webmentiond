@@ -1,2 +1,3 @@
 /bin
 *.sqlite
+.envrc

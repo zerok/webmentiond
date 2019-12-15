@@ -17,18 +17,18 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	m, err := webmention.ExtractMention(r)
 	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusBadRequest, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: err})
 		return
 	}
 	if srv.cfg.Receiver.TargetPolicy != nil {
 		if !srv.cfg.Receiver.TargetPolicy(httptest.NewRequest(http.MethodGet, m.Target, nil)) {
-			srv.sendServerError(ctx, w, http.StatusBadRequest, fmt.Errorf("target domain not allowed"))
+			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("target domain not allowed")})
 			return
 		}
 	}
 	tx, err := srv.cfg.Database.BeginTx(ctx, nil)
 	if err != nil {
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
 	now := time.Now()
@@ -42,12 +42,12 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(201)
 			return
 		}
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
 	if err := tx.Commit(); err != nil {
 		tx.Rollback()
-		srv.sendServerError(ctx, w, http.StatusInternalServerError, err)
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 	}
 	w.WriteHeader(201)
 }
