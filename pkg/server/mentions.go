@@ -115,8 +115,20 @@ func (srv *Server) handleMentionStatusUpdate(w http.ResponseWriter, r *http.Requ
 		srv.sendError(ctx, w, err)
 		return
 	}
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", status, id); err != nil {
+	res, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", status, id)
+	if err != nil {
 		srv.sendError(ctx, w, err)
+		tx.Rollback()
+		return
+	}
+	num, err := res.RowsAffected()
+	if err != nil {
+		srv.sendError(ctx, w, err)
+		tx.Rollback()
+		return
+	}
+	if num != 1 {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusNotFound})
 		tx.Rollback()
 		return
 	}

@@ -37,6 +37,17 @@ func createMention(t *testing.T, db *sql.DB, id, source, target string) {
 	require.NoError(t, err)
 }
 
+func requireMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
+	t.Helper()
+	ctx := context.Background()
+	var actual string
+	require.NoError(t, db.QueryRowContext(ctx, "SELECT status FROM webmentions WHERE id = ?", id).Scan(&actual))
+	if actual != status {
+		t.Errorf("Mention %s was expected to have status %s but has %s instead.", id, status, actual)
+		t.Fail()
+	}
+}
+
 func TestPagingMentions(t *testing.T) {
 	db := setupDatabase(t)
 	defer db.Close()
@@ -81,4 +92,44 @@ func TestPagingMentions(t *testing.T) {
 	require.Len(t, res.Items, 1)
 	require.Equal(t, "c", res.Items[0].ID)
 	require.Empty(t, res.Next)
+}
+
+func TestApprovingMention(t *testing.T) {
+	db := setupDatabase(t)
+	defer db.Close()
+	srv := setupServer(t, db)
+	createMention(t, db, "a", "a", "b")
+	requireMentionStatus(t, db, "a", "new")
+
+	r := httptest.NewRequest(http.MethodPost, "/manage/mentions/a/approve", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusOK, w.Code)
+	requireMentionStatus(t, db, "a", "approved")
+
+	// Calling approve on a non-existing object should return a 404 code
+	r = httptest.NewRequest(http.MethodPost, "/manage/mentions/b/approve", nil)
+	w = httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusNotFound, w.Code)
+}
+
+func TestRejectingMention(t *testing.T) {
+	db := setupDatabase(t)
+	defer db.Close()
+	srv := setupServer(t, db)
+	createMention(t, db, "a", "a", "b")
+	requireMentionStatus(t, db, "a", "new")
+
+	r := httptest.NewRequest(http.MethodPost, "/manage/mentions/a/reject", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusOK, w.Code)
+	requireMentionStatus(t, db, "a", "rejected")
+
+	// Calling reject on a non-existing object should return a 404 code
+	r = httptest.NewRequest(http.MethodPost, "/manage/mentions/b/reject", nil)
+	w = httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusNotFound, w.Code)
 }
