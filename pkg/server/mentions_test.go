@@ -92,6 +92,14 @@ func TestPagingMentions(t *testing.T) {
 	require.Len(t, res.Items, 1)
 	require.Equal(t, "c", res.Items[0].ID)
 	require.Empty(t, res.Next)
+
+	// For now, we don't have any verified mentions yet:
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest(http.MethodGet, "/manage/mentions?status=verified", nil)
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusOK, w.Code)
+	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
+	require.Equal(t, 0, res.Total)
 }
 
 func TestApprovingMention(t *testing.T) {

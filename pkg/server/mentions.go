@@ -17,6 +17,7 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 	var limit int64
 	var offset int64
 	rawLimit := r.URL.Query().Get("limit")
+	status := r.URL.Query().Get("status")
 	rawOffset := r.URL.Query().Get("offset")
 	if rawOffset != "" {
 		offset, err = strconv.ParseInt(rawOffset, 10, 64)
@@ -47,15 +48,25 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-	query := "SELECT id, source, target, status, created_at FROM webmentions ORDER BY id ASC LIMIT ? OFFSET ?"
 	result := PagedMentionList{
 		Items: make([]Mention, 0, 10),
 	}
-	if err := tx.QueryRowContext(ctx, "SELECT COUNT(id) FROM webmentions").Scan(&result.Total); err != nil {
-		srv.sendError(ctx, w, err)
-		return
+	var rows *sql.Rows
+	if status != "" {
+		query := "SELECT id, source, target, status, created_at FROM webmentions WHERE status = ? ORDER BY id ASC LIMIT ? OFFSET ?"
+		if err := tx.QueryRowContext(ctx, "SELECT COUNT(id) FROM webmentions WHERE status = ?", status).Scan(&result.Total); err != nil {
+			srv.sendError(ctx, w, err)
+			return
+		}
+		rows, err = tx.QueryContext(ctx, query, status, limit, offset)
+	} else {
+		query := "SELECT id, source, target, status, created_at FROM webmentions ORDER BY id ASC LIMIT ? OFFSET ?"
+		if err := tx.QueryRowContext(ctx, "SELECT COUNT(id) FROM webmentions").Scan(&result.Total); err != nil {
+			srv.sendError(ctx, w, err)
+			return
+		}
+		rows, err = tx.QueryContext(ctx, query, limit, offset)
 	}
-	rows, err := tx.QueryContext(ctx, query, limit, offset)
 	if err != nil {
 		srv.sendError(ctx, w, err)
 		return
