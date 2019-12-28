@@ -2,15 +2,20 @@ package server
 
 import (
 	"bytes"
+	"context"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 	"github.com/zerok/webmentiond/pkg/mailer"
 )
 
 func TestAuthentication(t *testing.T) {
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.DebugLevel)
+	ctx := logger.WithContext(context.Background())
 	m := mailer.NewDummy()
 	srv := New(func(c *Configuration) {
 		c.Mailer = m
@@ -36,4 +41,56 @@ func TestAuthentication(t *testing.T) {
 	srv.ServeHTTP(w, r)
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Len(t, m.Messages, 1)
+
+	token := srv.validToken["valid"]
+	require.NotEmpty(t, token)
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest(http.MethodPost, "/authenticate?token="+token, nil)
+	srv.ServeHTTP(w, r)
+	require.Equal(t, w.Code, http.StatusOK)
+	cookie := requireCookie(t, w, "token")
+	require.NotEmpty(t, cookie)
+	require.NotEmpty(t, cookie.Value)
+
+	// If we run against the auth-middleware without a token, we
+	// should get a 401 status:
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest(http.MethodPost, "/", nil)
+	srv.requireAuthMiddleware(nil).ServeHTTP(w, r)
+	require.Equal(t, w.Code, http.StatusUnauthorized)
+
+	// If we add a broken cookie, the middleware should fail with
+	// a 401 status as if no cookie had been present:
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest(http.MethodPost, "/", nil)
+	r.AddCookie(&http.Cookie{
+		Name:  "token",
+		Value: "...",
+	})
+	srv.requireAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	})).ServeHTTP(w, r.WithContext(ctx))
+	require.Equal(t, w.Code, http.StatusUnauthorized)
+
+	// If we add the correct cookie, the middleware should let us
+	// pass:
+	w = httptest.NewRecorder()
+	r = httptest.NewRequest(http.MethodPost, "/", nil)
+	r.AddCookie(cookie)
+	srv.requireAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	})).ServeHTTP(w, r.WithContext(ctx))
+	require.Equal(t, w.Code, http.StatusOK)
+}
+
+func requireCookie(t *testing.T, w *httptest.ResponseRecorder, name string) *http.Cookie {
+	t.Helper()
+	for _, c := range w.Result().Cookies() {
+		if c.Name == name {
+			return c
+		}
+	}
+	t.Errorf("no \"%s\" cookie found in response", name)
+	t.Fail()
+	return nil
 }

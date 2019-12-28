@@ -10,9 +10,44 @@ import (
 	"github.com/rs/xid"
 )
 
+// requireAuthMiddleware ensures that a request contains a valid JWT
+// before allowing it to pass through.
 func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		handler.ServeHTTP(w, r)
+		ctx := r.Context()
+		c, err := r.Cookie("token")
+		if err != nil {
+			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized})
+			return
+		}
+		if c == nil {
+			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized})
+			return
+		}
+		token, err := jwt.Parse(c.Value, func(token *jwt.Token) (interface{}, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("invalid token-signing format found")
+			}
+			return []byte(srv.cfg.Auth.JWTSecret), nil
+		})
+		if err != nil {
+			srv.sendError(ctx, w, &HTTPError{Err: err, StatusCode: http.StatusUnauthorized})
+			return
+		}
+
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			srv.sendError(ctx, w, &HTTPError{Err: fmt.Errorf("unexpected token claims found"), StatusCode: http.StatusBadRequest})
+			return
+		}
+
+		for _, e := range srv.cfg.Auth.AdminEmails {
+			if e == claims["sub"] {
+				handler.ServeHTTP(w, r)
+				return
+			}
+		}
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusForbidden})
 	})
 }
 

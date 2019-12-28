@@ -55,6 +55,11 @@ func New(configurators ...Configurator) *Server {
 	srv.router.Post("/receive", srv.handleReceive)
 	srv.router.Post("/request-login", srv.handleLogin)
 	srv.router.Post("/authenticate", srv.handleAuthenticate)
+	srv.router.With(srv.requireAuthMiddleware).Route("/manage", func(r chi.Router) {
+		r.Get("/mentions", srv.handleListMentions)
+		r.Post("/mentions/{id}/approve", srv.handleApproveMention)
+		r.Post("/mentions/{id}/reject", srv.handleRejectMention)
+	})
 	srv.router.Get("/get", srv.handleGet)
 	return srv
 }
