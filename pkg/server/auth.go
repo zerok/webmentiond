@@ -10,11 +10,25 @@ import (
 	"github.com/rs/xid"
 )
 
+type authorizedContextKey struct{}
+
+func isAuthorized(ctx context.Context) bool {
+	return ctx.Value(authorizedContextKey{}) == true
+}
+
+func AuthorizeContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, authorizedContextKey{}, true)
+}
+
 // requireAuthMiddleware ensures that a request contains a valid JWT
 // before allowing it to pass through.
 func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
+		if isAuthorized(ctx) {
+			handler.ServeHTTP(w, r)
+			return
+		}
 		c, err := r.Cookie("token")
 		if err != nil {
 			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized})
@@ -43,7 +57,7 @@ func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 
 		for _, e := range srv.cfg.Auth.AdminEmails {
 			if e == claims["sub"] {
-				handler.ServeHTTP(w, r)
+				handler.ServeHTTP(w, r.WithContext(AuthorizeContext(ctx)))
 				return
 			}
 		}
