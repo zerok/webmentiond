@@ -21,21 +21,29 @@ func setupDatabase(t *testing.T) *sql.DB {
 	return db
 }
 
-func TestPagingMentions(t *testing.T) {
-	ctx := context.Background()
-	db := setupDatabase(t)
-	defer db.Close()
+func setupServer(t *testing.T, db *sql.DB) *server.Server {
+	t.Helper()
 	srv := server.New(func(c *server.Configuration) {
 		c.Database = db
 		c.MigrationsFolder = "migrations"
 	})
-	require.NoError(t, srv.MigrateDatabase(ctx))
-	_, err := db.Exec("INSERT INTO webmentions (id, source, target, created_at) VALUES ('a', 'a', 'b', ?)", time.Now())
+	require.NoError(t, srv.MigrateDatabase(context.Background()))
+	return srv
+}
+
+func createMention(t *testing.T, db *sql.DB, id, source, target string) {
+	t.Helper()
+	_, err := db.Exec("INSERT INTO webmentions (id, source, target, created_at) VALUES (?, ?, ?, ?)", id, source, target, time.Now())
 	require.NoError(t, err)
-	_, err = db.Exec("INSERT INTO webmentions (id, source, target, created_at) VALUES ('b', 'b', 'c', ?)", time.Now())
-	require.NoError(t, err)
-	_, err = db.Exec("INSERT INTO webmentions (id, source, target, created_at) VALUES ('c', 'c', 'd', ?)", time.Now())
-	require.NoError(t, err)
+}
+
+func TestPagingMentions(t *testing.T) {
+	db := setupDatabase(t)
+	defer db.Close()
+	srv := setupServer(t, db)
+	createMention(t, db, "a", "a", "b")
+	createMention(t, db, "b", "b", "c")
+	createMention(t, db, "c", "c", "d")
 
 	// If we just send an authorized request, we should get a 401 back:
 	w := httptest.NewRecorder()
