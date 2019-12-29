@@ -52,6 +52,7 @@ type Configuration struct {
 	Auth             AuthConfiguration
 	MailFrom         string
 	Mailer           mailer.Mailer
+	AllowedOrigins   []string
 }
 
 type Configurator func(c *Configuration)

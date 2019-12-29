@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/cors"
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -43,6 +44,10 @@ func New(configurators ...Configurator) *Server {
 		validToken: make(map[string]string),
 		mailer:     cfg.Mailer,
 	}
+	cors := cors.New(cors.Options{
+		AllowedOrigins: cfg.AllowedOrigins,
+	})
+	srv.router.Use(cors.Handler)
 	if cfg.Context != nil {
 		ctx := cfg.Context
 		logger := zerolog.Ctx(ctx)
