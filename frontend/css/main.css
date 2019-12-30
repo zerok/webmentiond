@@ -1,0 +1,79 @@
+:root {
+    --red: #ac4141;
+    --green: #8aa45c;
+    --blue: #3f41b3;
+    --body: #333;
+}
+
+body {
+    color: var(--body);
+    font-family: Arial;
+}
+
+a {
+    color: var(--blue);
+}
+
+.button {
+    padding: 3px;
+    border: 1px solid #CCC;
+}
+
+.button--positive {
+    background: var(--green);
+    color: #FFF;
+}
+
+.button--negative {
+    background: var(--red);
+    color: #FFF;
+}
+
+.mention-list {
+    padding: 0;
+    list-style: none;
+    margin: 0;
+}
+
+.mention {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid #CCC;
+    display: grid;
+    grid-template-columns: auto 300px;
+}
+
+.mention__info,
+.mention__actions {
+    padding: 5px 0;
+}
+
+.mention-filters__status {
+
+}
+
+.mention-filters__status a {
+    display: inline-block;
+    text-decoration: none;
+    padding: 5px;
+}
+
+.mention-filters__status a.active {
+    font-weight: bold;
+}
+
+.mention__actions {
+    display: block;
+    text-align: right;
+}
+
+.mention__source {
+    display: block;
+}
+
+.mention__created_at,
+.mention__target,
+.mention__to {
+    font-size: 80%;
+    opacity: 0.6;
+}

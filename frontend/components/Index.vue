@@ -1,15 +1,22 @@
 <template>
   <div>
-  <h1>Index</h1>
+  <h1>Mentions</h1>
   <div class="message" v-if="updateMentionStatusStatus == 'pending'">
     Update mention...
   </div>
   <mention-filters v-on:change="onFilterUpdate" />
-  <ul v-if="mentions">
-    <li v-for="mention in mentions">
-      {{ mention.status }}: {{ mention.source }} to {{ mention.target }}
-      <button v-on:click="approve(mention)">approve</button>
-      <button v-on:click="reject(mention)">reject</button>
+  <ul v-if="mentions" class="mention-list">
+    <li v-for="mention in mentions" class="mention">
+      <div class="mention__info">
+        <a class="mention__source" :href="mention.source">{{ mention.source }}</a>
+        <i class="fas fa-long-arrow-alt-right mention__to"></i>
+        <a class="mention__target" :href="mention.target">{{ mention.target }}</a>
+        <span class="mention__created_at">({{ mention.created_at }})</span>
+      </div>
+      <div class="mention__actions">
+      <button class="button button--small button--positive" v-on:click="approve(mention)"><i class="far fa-thumbs-up"></i> approve</button>
+      <button class="button button--small button--negative" v-on:click="reject(mention)"><i class="far fa-thumbs-down"></i> reject</button>
+      </div>
     </li>
   </ul>
   </div>
