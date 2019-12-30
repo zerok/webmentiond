@@ -79,6 +79,7 @@ var serveCmd = &cobra.Command{
 			c.MailFrom = mailFrom
 			c.Mailer = m
 			c.AllowedOrigins = allowedOrigins
+			c.PublicURL, _ = cmd.Flags().GetString("public-url")
 		})
 		if err := srv.MigrateDatabase(ctx); err != nil {
 			return err
@@ -95,6 +96,7 @@ var serveCmd = &cobra.Command{
 func init() {
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")
 	serveCmd.Flags().String("addr", "127.0.0.1:8080", "Address to listen on for HTTP requests")
+	serveCmd.Flags().String("public-url", "http://127.0.0.1:8080", "URL used as base for generating links")
 	serveCmd.Flags().String("database-migrations", "./pkg/server/migrations", "Path to the database migrations")
 	serveCmd.Flags().StringSlice("allowed-target-domains", []string{}, "Domain name that are accepted as targets")
 	serveCmd.Flags().StringSlice("allowed-origin", []string{}, "Domain name that is allowed to contact the API (CORS)")

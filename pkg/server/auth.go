@@ -66,7 +66,8 @@ func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 }
 
 func (srv *Server) sendAuthenticationMail(ctx context.Context, email string, token string) error {
-	return srv.mailer.SendMail(ctx, "horst@zerokspot.com", []string{email}, "[webmentiond] Login token", token)
+	tokenURL := fmt.Sprintf("%s/authenticate/%s", srv.cfg.PublicURL, token)
+	return srv.mailer.SendMail(ctx, "horst@zerokspot.com", []string{email}, "[webmentiond] Login token", tokenURL)
 }
 
 // handleLogin just takes a user's email address and sends out an
@@ -100,7 +101,11 @@ func (srv *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 // attached to the response as cookie.
 func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	authtoken := r.URL.Query().Get("token")
+	if err := r.ParseForm(); err != nil {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: err})
+		return
+	}
+	authtoken := r.FormValue("token")
 	if authtoken == "" {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("token missing")})
 		return

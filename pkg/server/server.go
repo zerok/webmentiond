@@ -45,7 +45,8 @@ func New(configurators ...Configurator) *Server {
 		mailer:     cfg.Mailer,
 	}
 	cors := cors.New(cors.Options{
-		AllowedOrigins: cfg.AllowedOrigins,
+		AllowedOrigins:   cfg.AllowedOrigins,
+		AllowCredentials: true,
 	})
 	srv.router.Use(cors.Handler)
 	if cfg.Context != nil {
