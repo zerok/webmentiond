@@ -78,6 +78,7 @@ func TestPagingMentions(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, res.Next, nil)
+	res = server.PagedMentionList{}
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
@@ -86,6 +87,7 @@ func TestPagingMentions(t *testing.T) {
 
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, res.Next, nil)
+	res = server.PagedMentionList{}
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
@@ -96,6 +98,7 @@ func TestPagingMentions(t *testing.T) {
 	// For now, we don't have any verified mentions yet:
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, "/manage/mentions?status=verified", nil)
+	res = server.PagedMentionList{}
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))

@@ -34,7 +34,9 @@ type Server struct {
 }
 
 func New(configurators ...Configurator) *Server {
-	cfg := Configuration{}
+	cfg := Configuration{
+		Context: context.Background(),
+	}
 	for _, configurator := range configurators {
 		configurator(&cfg)
 	}
