@@ -54,6 +54,7 @@ type Configuration struct {
 	Mailer           mailer.Mailer
 	AllowedOrigins   []string
 	PublicURL        string
+	UIPath           string
 }
 
 type Configurator func(c *Configuration)

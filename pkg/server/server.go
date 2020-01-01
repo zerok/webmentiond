@@ -38,6 +38,7 @@ func New(configurators ...Configurator) *Server {
 	for _, configurator := range configurators {
 		configurator(&cfg)
 	}
+	logger := zerolog.Ctx(cfg.Context)
 	srv := &Server{
 		router:     chi.NewRouter(),
 		cfg:        cfg,
@@ -58,6 +59,10 @@ func New(configurators ...Configurator) *Server {
 			})
 		})
 	}
+	logger.Info().Msgf("UI path served from %s", cfg.UIPath)
+	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
+	})
 	srv.router.Post("/receive", srv.handleReceive)
 	srv.router.Post("/request-login", srv.handleLogin)
 	srv.router.Post("/authenticate", srv.handleAuthenticate)

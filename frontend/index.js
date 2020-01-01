@@ -10,7 +10,7 @@ import Cookie from 'js-cookie';
 Vue.use(Vuex);
 Vue.use(Router);
 
-const API_BASE_URL = "http://localhost:8080"
+const API_BASE_URL = ""
 
 const transport = Axios.create({
   withCredentials: true
@@ -27,6 +27,9 @@ const store = new Vuex.Store({
     mentionFilterStatus: 'verified',
   },
   mutations: {
+    logout(state) {
+      state.loggedIn = false;
+    },
     updateAuthStatus(state, status) {
       state.authStatus = status;
     },
@@ -70,7 +73,11 @@ const store = new Vuex.Store({
         const resp = await transport.get(`${API_BASE_URL}/manage/mentions?status=${f.status}`);
         context.commit('setMentions', resp.data.items);
       } catch (e) {
+        console.log(e.response);
         console.log(e);
+        if (e.response && e.response.status === 401) {
+            context.commit('logout');
+        }
         context.commit('updateGetMentionsStatus', 'failed');
       }
     },
@@ -82,6 +89,10 @@ const store = new Vuex.Store({
         await transport.post(`${API_BASE_URL}/request-login`, data);
         context.commit('updateRequestTokenStatus', 'succeeded');
       } catch(e) {
+        console.log(e);
+        if (e.response && e.response.status == 401) {
+            context.commit('logout');
+        }
         context.commit('updateRequestTokenStatus', 'failed');
       }
     },
@@ -100,6 +111,7 @@ const store = new Vuex.Store({
         await transport.post(`${API_BASE_URL}/manage/mentions/${mention.id}/reject`);
         context.commit('updateMentionStatusStatus', 'succeeded');
       } catch(e) {
+        console.log(e);
         context.commit('updateMentionStatusStatus', 'failed');
       }
     },
@@ -128,7 +140,14 @@ const router = new Router({
     },
     {
       path: '/',
-      component: Index
+      component: Index,
+      beforeEnter: (to, from, next) => {
+        if(!store.state.loggedIn) {
+          next('/login');
+          return;
+        }
+        next();
+      }
     },
   ]
 });
