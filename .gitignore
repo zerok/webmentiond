@@ -3,3 +3,4 @@
 .envrc
 /frontend/node_modules
 /frontend/dist
+/frontend/fontawesome
