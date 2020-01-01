@@ -81,14 +81,7 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 		result.Items = append(result.Items, m)
 	}
 	rows.Close()
-	// Now let's see, if there would be more items to fetch:
-	rows, err = tx.QueryContext(ctx, "SELECT id, source, target, status, created_at FROM webmentions ORDER BY created_at DESC LIMIT ? OFFSET ?", 1, offset+limit)
-	if err != nil {
-		srv.sendError(ctx, w, err)
-		return
-	}
-	defer rows.Close()
-	if rows.Next() {
+	if offset+limit < int64(result.Total) {
 		v := url.Values{}
 		v.Set("limit", r.URL.Query().Get("limit"))
 		v.Set("offset", fmt.Sprintf("%d", offset+limit))
