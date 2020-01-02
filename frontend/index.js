@@ -32,6 +32,9 @@ const store = new Vuex.Store({
     },
     updateAuthStatus(state, status) {
       state.authStatus = status;
+      if (status === 'succeeded') {
+        state.loggedIn = true;
+      }
     },
     updateRequestTokenStatus(state, newStatus) {
       state.requestTokenStatus = newStatus;
@@ -57,7 +60,6 @@ const store = new Vuex.Store({
         data.set('token', token);
         const resp = await transport.post(`${API_BASE_URL}/authenticate`, data);
         context.commit('updateAuthStatus', 'succeeded');
-        console.log(resp);
       } catch(e) {
         console.log(e);
         context.commit('updateAuthStatus', 'failed');
@@ -73,7 +75,6 @@ const store = new Vuex.Store({
         const resp = await transport.get(`${API_BASE_URL}/manage/mentions?status=${f.status}`);
         context.commit('setMentions', resp.data.items);
       } catch (e) {
-        console.log(e.response);
         console.log(e);
         if (e.response && e.response.status === 401) {
             context.commit('logout');
@@ -118,6 +119,10 @@ const store = new Vuex.Store({
     setMentionFilterStatus(context, status) {
       context.commit('setMentionFilterStatus', status);
     },
+    logout(context) {
+      Cookie.remove('token');
+      context.commit('logout');
+    },
   }
 });
 
@@ -125,6 +130,10 @@ const router = new Router({
   routes: [
     {
       path: '/authenticate/:token',
+      component: Authenticate
+    },
+    {
+      path: '/authenticate',
       component: Authenticate
     },
     {

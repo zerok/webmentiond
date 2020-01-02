@@ -5,6 +5,18 @@
     --body: #333;
 }
 
+.message {
+    color: #FFF;
+    padding: 5px;
+}
+.message--success {
+    background: var(--green);
+}
+
+.message--error {
+    background: var(--red);
+}
+
 body {
     color: var(--body);
     font-family: Arial;
@@ -19,6 +31,7 @@ a {
     border: 1px solid #CCC;
 }
 
+.button--primary,
 .button--positive {
     background: var(--green);
     color: #FFF;
@@ -76,4 +89,17 @@ a {
 .mention__to {
     font-size: 80%;
     opacity: 0.6;
+}
+
+.auth,
+.login {
+    width: 300px;
+    margin: auto;
+}
+
+.form__actions {
+    margin-top: 20px;
+    border-top: 1px solid #CCC;
+    padding-top: 20px;
+    text-align: right;
 }

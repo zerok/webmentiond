@@ -21,4 +21,7 @@ frontend/fontawesome: frontend/$(fontawesome_archive)
 frontend/$(fontawesome_archive):
 	$(error "Please download $(fontawesome_archive) from https://fontawesome.com/download and place it inside ./frontend")
 
-.PHONY: clean all test
+frontend-watch:
+	cd frontend && yarn && yarn run webpack --watch
+
+.PHONY: clean all test frontend-watch

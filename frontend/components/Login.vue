@@ -1,8 +1,20 @@
 <template>
-  <form v-on:submit="onSubmit">
-    {{ requestTokenStatus }}
+  <form v-on:submit="onSubmit" class="login">
+    <h1>Log in</h1>
+    <p class="message message--success" v-if="requestTokenStatus == 'succeeded'">
+      If an account exists for this e-mail, you just received a login
+      link. You can also authenticate with a token on <router-link to="/authenticate">this
+      page</router-link>.
+    </p>
+    <p class="message message--error" v-if="requestTokenStatus == 'failed'">
+      Failed to send an authentication link.
+    </p>
+    <p class="info">If you already have an authentication code, enter it on <router-link to="/authenticate">this
+      page</router-link>.</p>
     <label>E-mail: <input v-model="email" type="email"></label>
-    <button type="submit">Request login</button>
+    <div class="form__actions">
+      <button class="button button--primary" type="submit">Request login</button>
+    </div>
   </form>
 </template>
 <script>
@@ -20,7 +32,6 @@
     methods: {
       onSubmit(evt) {
         evt.preventDefault();
-        console.log(this.$data.email);
         this.$store.dispatch('requestToken', this.$data.email);
       }
     }
