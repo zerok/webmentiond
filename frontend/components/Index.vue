@@ -1,11 +1,9 @@
 <template>
   <div>
   <h1>Mentions</h1>
-  <div class="message" v-if="updateMentionStatusStatus == 'pending'">
-    Update mention...
-  </div>
   <mention-filters v-on:change="onFilterUpdate" />
-  <ul v-if="mentions" class="mention-list">
+  <Loading v-if="updateMentionStatusStatus == 'pending'" />
+  <ul v-if="mentions && mentions.length" class="mention-list">
     <li v-for="mention in mentions" class="mention">
       <div class="mention__info">
         <a class="mention__source" :href="mention.source">{{ mention.source }}</a>
@@ -19,14 +17,17 @@
       </div>
     </li>
   </ul>
+  <p class="empty" v-else>No mentions found.</p>
   </div>
 </template>
 <script>
   import {mapState} from 'vuex';
   import MentionFilters from './MentionFilters.vue';
+  import Loading from './Loading.vue';
 export default {
   components: {
     MentionFilters,
+    Loading,
   },
   data() {
     return {

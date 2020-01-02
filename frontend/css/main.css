@@ -52,8 +52,13 @@ a {
     margin: 0;
     padding: 0;
     border-bottom: 1px solid #CCC;
-    display: grid;
-    grid-template-columns: auto 300px;
+}
+
+@media all and (min-width: 500px) {
+    .mention {
+        display: grid;
+        grid-template-columns: auto 300px;
+    }
 }
 
 .mention__info,
@@ -102,4 +107,9 @@ a {
     border-top: 1px solid #CCC;
     padding-top: 20px;
     text-align: right;
+}
+
+.loading {
+    padding: 10px;
+    text-align: center;
 }
