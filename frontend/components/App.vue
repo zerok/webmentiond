@@ -1,6 +1,10 @@
 <template>
   <div id="app" :class="'app app--' + (loggedIn ? 'logged-in' : 'logged-out')">
-    <a v-if="loggedIn" href="#" v-on:click="logout">Log out</a>
+    <nav class="topnav" v-if="loggedIn">
+      <div class="topnav__right">
+        <a href="#" v-on:click="logout">Log out <i class="fa fa-sign-out"></i></a>
+      </div>
+    </nav>
     <router-view></router-view>
   </div>
 </template>

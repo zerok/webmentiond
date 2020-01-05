@@ -20,6 +20,8 @@
 body {
     color: var(--body);
     font-family: Arial;
+    padding: 0;
+    margin: 0;
 }
 
 a {
@@ -63,21 +65,26 @@ a {
 
 .mention__info,
 .mention__actions {
-    padding: 5px 0;
+    padding: 10px 0;
 }
 
 .mention-filters__status {
-
 }
 
 .mention-filters__status a {
     display: inline-block;
+    background: #DDD;
     text-decoration: none;
     padding: 5px;
+    border: 1px solid #999;
+    border-bottom: 0;
+    color: #AAA;
 }
 
 .mention-filters__status a.active {
     font-weight: bold;
+    color: var(--blue);
+    background: #FFF;
 }
 
 .mention__actions {
@@ -96,12 +103,6 @@ a {
     opacity: 0.6;
 }
 
-.auth,
-.login {
-    width: 300px;
-    margin: auto;
-}
-
 .form__actions {
     margin-top: 20px;
     border-top: 1px solid #CCC;
@@ -112,4 +113,30 @@ a {
 .loading {
     padding: 10px;
     text-align: center;
+}
+
+.topnav {
+    padding: 5px;
+    background: #555;
+    color: #FFF;
+    border-bottom: solid 3px #888;
+}
+
+.topnav__right {
+    text-align: right;
+}
+
+.topnav a {
+    color: #FFF;
+}
+
+.main {
+    padding: 5px;
+}
+
+.title {
+    padding: 10px 5px;
+    margin: 0;
+    background: #CCC;
+    color: var(--blue);
 }

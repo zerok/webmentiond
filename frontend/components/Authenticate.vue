@@ -1,9 +1,11 @@
 <template>
   <form v-on:submit="onSubmit" class="auth">
-    <h1>Authenticate account</h1>
+    <h1 class="title">Authenticate account</h1>
+    <div class="main">
     <label>Token: <input v-model="token"></label>
     <div class="form__actions">
       <button type="submit" class="button button--primary">Authenticate</button>
+    </div>
     </div>
   </form>
 </template>

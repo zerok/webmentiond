@@ -1,6 +1,7 @@
 <template>
   <div>
-  <h1>Mentions</h1>
+  <h1 class="title">Mentions</h1>
+  <div class="main">
   <mention-filters v-on:change="onFilterUpdate" />
   <Loading v-if="updateMentionStatusStatus == 'pending'" />
   <ul v-if="mentions && mentions.length" class="mention-list">
@@ -18,6 +19,7 @@
     </li>
   </ul>
   <p class="empty" v-else>No mentions found.</p>
+  </div>
   </div>
 </template>
 <script>
