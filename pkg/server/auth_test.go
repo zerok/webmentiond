@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -48,9 +49,9 @@ func TestAuthentication(t *testing.T) {
 	r = httptest.NewRequest(http.MethodPost, "/authenticate?token="+token, nil)
 	srv.ServeHTTP(w, r)
 	require.Equal(t, w.Code, http.StatusOK)
-	cookie := requireCookie(t, w, "token")
-	require.NotEmpty(t, cookie)
-	require.NotEmpty(t, cookie.Value)
+	require.Equal(t, w.Header().Get("Content-Type"), "application/jwt")
+	jot := w.Body.Bytes()
+	require.NotEmpty(t, jot)
 
 	// If we run against the auth-middleware without a token, we
 	// should get a 401 status:
@@ -59,38 +60,23 @@ func TestAuthentication(t *testing.T) {
 	srv.requireAuthMiddleware(nil).ServeHTTP(w, r)
 	require.Equal(t, w.Code, http.StatusUnauthorized)
 
-	// If we add a broken cookie, the middleware should fail with
-	// a 401 status as if no cookie had been present:
+	// If we add a broken jwt, the middleware should fail with a
+	// 401 status as if no token were present:
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodPost, "/", nil)
-	r.AddCookie(&http.Cookie{
-		Name:  "token",
-		Value: "...",
-	})
+	r.Header.Set("Authorization", "Bearer BROKEN")
 	srv.requireAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	})).ServeHTTP(w, r.WithContext(ctx))
 	require.Equal(t, w.Code, http.StatusUnauthorized)
 
-	// If we add the correct cookie, the middleware should let us
+	// If we add the correct token, the middleware should let us
 	// pass:
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodPost, "/", nil)
-	r.AddCookie(cookie)
+	r.Header.Set("Authorization", fmt.Sprintf("Bearer %s", string(jot)))
 	srv.requireAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(200)
 	})).ServeHTTP(w, r.WithContext(ctx))
 	require.Equal(t, w.Code, http.StatusOK)
-}
-
-func requireCookie(t *testing.T, w *httptest.ResponseRecorder, name string) *http.Cookie {
-	t.Helper()
-	for _, c := range w.Result().Cookies() {
-		if c.Name == name {
-			return c
-		}
-	}
-	t.Errorf("no \"%s\" cookie found in response", name)
-	t.Fail()
-	return nil
 }

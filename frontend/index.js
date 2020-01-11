@@ -16,9 +16,13 @@ const transport = Axios.create({
   withCredentials: true
 });
 
+if (localStorage.getItem('session')) {
+  transport.defaults.headers.common['Authorization'] = localStorage.getItem('session');
+}
+
 const store = new Vuex.Store({
   state: {
-    loggedIn: !!Cookie.get('token'),
+    loggedIn: !!localStorage.getItem('session'),
     authStatus: null,
     mentions: null,
     requestTokenStatus: null,
@@ -60,6 +64,8 @@ const store = new Vuex.Store({
         data.set('token', token);
         const resp = await transport.post(`${API_BASE_URL}/authenticate`, data);
         context.commit('updateAuthStatus', 'succeeded');
+        localStorage.setItem('session', `Bearer ${resp.data}`);
+        transport.defaults.headers.common['Authorization'] = localStorage.getItem('session');
       } catch(e) {
         console.log(e);
         context.commit('updateAuthStatus', 'failed');
@@ -120,7 +126,7 @@ const store = new Vuex.Store({
       context.commit('setMentionFilterStatus', status);
     },
     logout(context) {
-      Cookie.remove('token');
+      localStorage.removeItem('session');
       context.commit('logout');
     },
   }

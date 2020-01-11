@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -29,16 +30,12 @@ func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 			handler.ServeHTTP(w, r)
 			return
 		}
-		c, err := r.Cookie("token")
-		if err != nil {
+		header := r.Header.Get("Authorization")
+		if header == "" || !strings.HasPrefix(header, "Bearer ") {
 			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized})
 			return
 		}
-		if c == nil {
-			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized})
-			return
-		}
-		token, err := jwt.Parse(c.Value, func(token *jwt.Token) (interface{}, error) {
+		token, err := jwt.Parse(strings.TrimPrefix(header, "Bearer "), func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("invalid token-signing format found")
 			}
@@ -134,10 +131,7 @@ func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 	}
-	cookie := http.Cookie{
-		Name:  "token",
-		Value: signedToken,
-	}
-	http.SetCookie(w, &cookie)
+	w.Header().Set("Content-Type", "application/jwt")
+	w.Write([]byte(signedToken))
 	delete(srv.validToken, matchingMail)
 }
