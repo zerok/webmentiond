@@ -37,6 +37,12 @@ func createMention(t *testing.T, db *sql.DB, id, source, target string) {
 	require.NoError(t, err)
 }
 
+func setMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
+	t.Helper()
+	_, err := db.Exec("UPDATE webmentions SET status = ? WHERE id = ?", status, id)
+	require.NoError(t, err)
+}
+
 func requireMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
 	t.Helper()
 	ctx := context.Background()
