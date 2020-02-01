@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/zerok/webmentiond/pkg/shorteners"
 	"golang.org/x/net/html"
 )
 
@@ -52,6 +53,13 @@ loop:
 			case "a":
 				href := getAttr(tokenizer, "href")
 				if href == mention.Target {
+					return nil
+				}
+				link, err := shorteners.Resolve(ctx, href)
+				if err != nil {
+					continue
+				}
+				if link == mention.Target {
 					return nil
 				}
 			}
