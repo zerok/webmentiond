@@ -116,7 +116,7 @@ func TestGetMentions(t *testing.T) {
 	require.Len(t, mentions, 0)
 
 	// Now, lets approve this mention and it should show up in the list:
-	setMentionStatus(t, db, "a", "accepted")
+	setMentionStatus(t, db, "a", "approved")
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodGet, "/get?target=https://zerokspot.com", nil)
 	srv.ServeHTTP(w, r)

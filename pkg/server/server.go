@@ -17,12 +17,6 @@ import (
 	"github.com/zerok/webmentiond/pkg/mailer"
 )
 
-const webmentionStatusNew = "new"
-const webmentionStatusVerified = "verified"
-const webmentionStatusInvalid = "invalid"
-const webmentionStatusAccepted = "accepted"
-const webmentionStatusRejected = "rejected"
-
 // Server implements the http.Handler interface and deals with
 // inserting new webmentions into the database.
 type Server struct {
@@ -130,7 +124,7 @@ func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, "select id, source, created_at, status from webmentions where status = ? and target = ? order by created_at", webmentionStatusAccepted, target)
+	rows, err := tx.QueryContext(ctx, "select id, source, created_at, status from webmentions where status = ? and target = ? order by created_at", MentionStatusApproved, target)
 	if err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return

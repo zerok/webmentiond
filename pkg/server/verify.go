@@ -19,20 +19,20 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	m := Mention{}
-	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", webmentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
+	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", MentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
 			return false, nil
 		}
 		return false, err
 	}
-	newStatus := webmentionStatusVerified
+	newStatus := MentionStatusVerified
 	if err := webmention.Verify(ctx, webmention.Mention{
 		Source: m.Source,
 		Target: m.Target,
 	}); err != nil {
 		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
-		newStatus = webmentionStatusInvalid
+		newStatus = MentionStatusInvalid
 	}
 	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
 		tx.Rollback()

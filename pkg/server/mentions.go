@@ -11,6 +11,12 @@ import (
 	"github.com/go-chi/chi"
 )
 
+const MentionStatusApproved = "approved"
+const MentionStatusRejected = "rejected"
+const MentionStatusNew = "new"
+const MentionStatusVerified = "verified"
+const MentionStatusInvalid = "invalid"
+
 func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 	var err error
 	ctx := r.Context()
@@ -99,7 +105,7 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 }
 
 func (srv *Server) handleApproveMention(w http.ResponseWriter, r *http.Request) {
-	srv.handleMentionStatusUpdate(w, r, "approved")
+	srv.handleMentionStatusUpdate(w, r, MentionStatusApproved)
 }
 
 func (srv *Server) handleMentionStatusUpdate(w http.ResponseWriter, r *http.Request, status string) {
@@ -144,5 +150,5 @@ func (srv *Server) handleMentionStatusUpdate(w http.ResponseWriter, r *http.Requ
 }
 
 func (srv *Server) handleRejectMention(w http.ResponseWriter, r *http.Request) {
-	srv.handleMentionStatusUpdate(w, r, "rejected")
+	srv.handleMentionStatusUpdate(w, r, MentionStatusRejected)
 }
