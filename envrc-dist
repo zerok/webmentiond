@@ -1,0 +1,6 @@
+export MAIL_HOST=smtp.mailgun.org
+export MAIL_PORT=465
+export MAIL_USER=postmaster@something.mailgun.org
+export MAIL_PASSWORD=PASSWORD
+export MAIL_FROM=no-reply@domain.com
+export AUTH_ADMIN_EMAILS=yourname@domain.com

@@ -136,15 +136,24 @@ const router = new Router({
   routes: [
     {
       path: '/authenticate/:token',
-      component: Authenticate
+      component: Authenticate,
+      meta: {
+        title: 'Authenticate'
+      },
     },
     {
       path: '/authenticate',
-      component: Authenticate
+      component: Authenticate,
+      meta: {
+        title: 'Authenticate'
+      },
     },
     {
       path: '/login',
       component: Login,
+      meta: {
+        title: 'Log in'
+      },
       beforeEnter: (to, from, next) => {
         if(store.state.loggedIn) {
           next('/');
@@ -156,6 +165,9 @@ const router = new Router({
     {
       path: '/',
       component: Index,
+      meta: {
+        title: 'Mentions'
+      },
       beforeEnter: (to, from, next) => {
         if(!store.state.loggedIn) {
           next('/login');
@@ -165,6 +177,12 @@ const router = new Router({
       }
     },
   ]
+});
+
+router.beforeEach((to, from, next) => {
+  const title = to.meta.title || 'Webmentions';
+  document.querySelector('title').innerHTML = title;
+  next();
 });
 
 new Vue({
