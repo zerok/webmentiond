@@ -63,8 +63,8 @@ func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 }
 
 func (srv *Server) sendAuthenticationMail(ctx context.Context, email string, token string) error {
-	tokenURL := fmt.Sprintf("%s/authenticate/%s", srv.cfg.PublicURL, token)
-	return srv.mailer.SendMail(ctx, "horst@zerokspot.com", []string{email}, "[webmentiond] Login token", tokenURL)
+	tokenURL := fmt.Sprintf("%s/ui/#/authenticate/%s", srv.cfg.PublicURL, token)
+	return srv.mailer.SendMail(ctx, srv.cfg.MailFrom, []string{email}, "[webmentiond] Login token", tokenURL)
 }
 
 // handleLogin just takes a user's email address and sends out an

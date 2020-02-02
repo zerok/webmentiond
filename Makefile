@@ -32,7 +32,14 @@ frontend-watch:
 docker:
 	docker build -t zerok/webmentiond:latest .
 
-run-server:
+run: bin/webmentiond
+	./bin/webmentiond serve \
+		--addr localhost:8080 \
+		--auth-jwt-secret testsecret \
+		--auth-admin-emails $(AUTH_ADMIN_EMAILS) \
+		--allowed-target-domains $(ALLOWED_TARGET_DOMAINS)
+
+run-docker:
 	docker run --rm \
 		-e "MAIL_USER=$(MAIL_USER)" \
 		-e "MAIL_PORT=$(MAIL_PORT)" \
@@ -44,7 +51,7 @@ run-server:
 		zerok/webmentiond:latest \
 		--addr 0.0.0.0:8080 \
 		--auth-jwt-secret testsecret \
-		--auth-admin-emails $(AUTH_ADMIN_MAILS) \
+		--auth-admin-emails $(AUTH_ADMIN_EMAILS) \
 		--allowed-target-domains $(ALLOWED_TARGET_DOMAINS)
 
-.PHONY: clean all test frontend-watch docker
+.PHONY: clean all test frontend-watch docker run
