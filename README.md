@@ -6,6 +6,9 @@ This repository contains the source code for the Webmention backend used at
 - A server for receiving mentions and storing them in a SQLite database
 - A simple UI for managing incoming mentions, approving and rejecting them
 
+A public Docker image built automatically from the master branch of this
+repository is available on <https://hub.docker.com/r/zerok/webmentiond>.
+
 ## How to get started
 
 1. You need to have an SMTP server through which the server can send you
