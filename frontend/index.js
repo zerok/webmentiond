@@ -10,7 +10,8 @@ import Cookie from 'js-cookie';
 Vue.use(Vuex);
 Vue.use(Router);
 
-const API_BASE_URL = ""
+// Strip the "/ui/" from the current location:
+const API_BASE_URL = window.location.pathname.substring(0, window.location.pathname.length - 4);
 
 const transport = Axios.create({
   withCredentials: true
