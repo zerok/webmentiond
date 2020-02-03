@@ -14,6 +14,7 @@
   export default {
     methods: {
       onSubmit(evt) {
+        evt.preventDefault();
         this.$store.dispatch('authenticate', this.$data.token);
       }
     },
