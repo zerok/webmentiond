@@ -39,6 +39,29 @@ func requireMentionWithStatus(t *testing.T, ctx context.Context, db *sql.DB, tar
 	t.Fatalf("no mention with status %s found", status)
 }
 
+func TestRedirectForBrowsers(t *testing.T) {
+	// If the user-agent indicates a browser (e.g. that "Mozilla" is part of the
+	// user-agent), then redirect the user to /ui/ on the root endpoint.
+	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.DebugLevel)
+	ctx := logger.WithContext(context.Background())
+	db, err := sql.Open("sqlite3", "file:test.db?cache=shared&mode=memory")
+	require.NoError(t, err)
+	require.NotNil(t, db)
+	defer db.Close()
+	srv := server.New(func(c *server.Configuration) {
+		c.Database = db
+		c.MigrationsFolder = "./migrations"
+		c.PublicURL = "https://zerokspot.com/webmentions"
+	})
+	require.NoError(t, srv.MigrateDatabase(ctx))
+	req := httptest.NewRequest(http.MethodGet, "/", nil)
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:73.0) Gecko/20100101 Firefox/73.0")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	require.Equal(t, http.StatusTemporaryRedirect, w.Code)
+	require.Equal(t, "https://zerokspot.com/webmentions/ui/", w.Header().Get("Location"))
+}
+
 func TestReceiver(t *testing.T) {
 	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.DebugLevel)
 	ctx := logger.WithContext(context.Background())

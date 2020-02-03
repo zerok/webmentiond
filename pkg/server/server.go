@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/go-chi/chi"
@@ -56,6 +57,7 @@ func New(configurators ...Configurator) *Server {
 		})
 	}
 	logger.Info().Msgf("UI path served from %s", cfg.UIPath)
+	srv.router.Get("/", srv.handleIndex)
 	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
 	})
@@ -69,6 +71,14 @@ func New(configurators ...Configurator) *Server {
 	})
 	srv.router.Get("/get", srv.handleGet)
 	return srv
+}
+
+func (srv *Server) handleIndex(w http.ResponseWriter, r *http.Request) {
+	ua := r.Header.Get("User-Agent")
+	if strings.Contains(ua, "Mozilla") {
+		w.Header().Set("Location", fmt.Sprintf("%s/ui/", srv.cfg.PublicURL))
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	}
 }
 
 // MigrateDatabase tries to update the underlying database to the
