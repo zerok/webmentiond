@@ -7,7 +7,7 @@ RUN go build
 FROM node:12-alpine AS nodebuilder
 COPY frontend /src/frontend
 WORKDIR /src/frontend
-RUN yarn && yarn run webpack
+RUN yarn && yarn run webpack --mode production
 
 FROM alpine:3.11
 VOLUME ["/data"]
