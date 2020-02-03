@@ -12,3 +12,14 @@ jobs:
         go-version: "1.13.1"
     - name: Run tests
       run: go test ./...
+  publish:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - uses: actions/checkout@v1
+    - name: Log into DockerHub
+      run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+    - name: Build Docker image
+      run: docker build -t zerok/webmentiond:latest .
+    - name: Push image
+      run: docker push zerok/webmentiond:latest
