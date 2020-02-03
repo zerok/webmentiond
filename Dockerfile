@@ -16,7 +16,6 @@ COPY pkg/server/migrations /var/lib/webmentiond/migrations
 COPY --from=gobuilder /src/cmd/webmentiond/webmentiond /usr/local/bin/
 COPY --from=nodebuilder /src/frontend/dist /var/lib/webmentiond/frontend/dist
 COPY --from=nodebuilder /src/frontend/css /var/lib/webmentiond/frontend/css
-COPY --from=nodebuilder /src/frontend/fontawesome /var/lib/webmentiond/frontend/fontawesome
 COPY --from=nodebuilder /src/frontend/index.html /var/lib/webmentiond/frontend/
 WORKDIR /var/lib/webmentiond
 ENTRYPOINT ["/usr/local/bin/webmentiond", "serve", "--database-migrations", "/var/lib/webmentiond/migrations", "--database", "/data/webmentiond.sqlite"]
