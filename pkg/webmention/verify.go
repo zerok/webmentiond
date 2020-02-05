@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/zerok/webmentiond/pkg/shorteners"
 	"golang.org/x/net/html"
 )
 
 // Verify uses a basic HTTP client and a default Verifier.
-func Verify(ctx context.Context, mention Mention) error {
+func Verify(ctx context.Context, mention *Mention) error {
 	client := &http.Client{}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mention.Source, nil)
 	if err != nil {
@@ -29,18 +31,34 @@ func Verify(ctx context.Context, mention Mention) error {
 // Verifier is used to check if a given response body produced by
 // fetching mention.Source contains a link to mention.Target.
 type Verifier interface {
-	Verify(ctx context.Context, resp *http.Response, body io.Reader, mention Mention) error
+	Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error
 }
 
 type htmlVerifier struct {
 }
 
-func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention Mention) error {
+func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error {
 	tokenizer := html.NewTokenizer(body)
+	inTitle := false
+	title := ""
+	u, err := url.Parse(mention.Source)
+	if err == nil {
+		title = u.Hostname()
+	}
 loop:
 	for {
 		tt := tokenizer.Next()
 		switch tt {
+		case html.TextToken:
+			if inTitle {
+				title = strings.TrimSpace(string(tokenizer.Text()))
+			}
+		case html.EndTagToken:
+			tagName, _ := tokenizer.TagName()
+			switch string(tagName) {
+			case "title":
+				inTitle = false
+			}
 		case html.ErrorToken:
 			err := tokenizer.Err()
 			if err == io.EOF {
@@ -50,9 +68,12 @@ loop:
 		case html.StartTagToken:
 			tagName, _ := tokenizer.TagName()
 			switch string(tagName) {
+			case "title":
+				inTitle = true
 			case "a":
 				href := getAttr(tokenizer, "href")
 				if href == mention.Target {
+					mention.Title = title
 					return nil
 				}
 				link, err := shorteners.Resolve(ctx, href)
@@ -60,6 +81,7 @@ loop:
 					continue
 				}
 				if link == mention.Target {
+					mention.Title = title
 					return nil
 				}
 			}

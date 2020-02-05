@@ -27,10 +27,11 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	newStatus := MentionStatusVerified
-	if err := webmention.Verify(ctx, webmention.Mention{
+	mention := webmention.Mention{
 		Source: m.Source,
 		Target: m.Target,
-	}); err != nil {
+	}
+	if err := webmention.Verify(ctx, &mention); err != nil {
 		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
 		newStatus = MentionStatusInvalid
 	}

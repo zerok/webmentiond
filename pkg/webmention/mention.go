@@ -24,6 +24,7 @@ var ErrInvalidRequest = errors.New("the request does not contain a source and a 
 type Mention struct {
 	Source string
 	Target string
+	Title  string
 }
 
 // ExtractMention parses a given request object and tries to extract

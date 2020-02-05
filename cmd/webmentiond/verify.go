@@ -22,7 +22,7 @@ func newVerifyCmd() Command {
 				Source: args[0],
 				Target: args[1],
 			}
-			if err := webmention.Verify(ctx, mention); err == nil {
+			if err := webmention.Verify(ctx, &mention); err == nil {
 				logger.Info().Msgf("%s links to %s.", mention.Source, mention.Target)
 			} else {
 				logger.Fatal().Msgf("No link between %s and %s found.", mention.Source, mention.Target)
