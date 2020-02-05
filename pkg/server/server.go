@@ -111,6 +111,7 @@ type Mention struct {
 	Target    string `json:"target"`
 	CreatedAt string `json:"created_at"`
 	Status    string `json:"status,omitempty"`
+	Title     string `json:"title,omitempty"`
 }
 
 // handleGet allows a website to get a list of all mentions stored for
@@ -134,7 +135,7 @@ func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	defer tx.Rollback()
-	rows, err := tx.QueryContext(ctx, "select id, source, created_at, status from webmentions where status = ? and target = ? order by created_at", MentionStatusApproved, target)
+	rows, err := tx.QueryContext(ctx, "select id, source, created_at, status, title from webmentions where status = ? and target = ? order by created_at", MentionStatusApproved, target)
 	if err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
@@ -143,7 +144,7 @@ func (srv *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	mentions := make([]Mention, 0, 10)
 	for rows.Next() {
 		m := Mention{}
-		if err := rows.Scan(&m.ID, &m.Source, &m.CreatedAt, &m.Status); err != nil {
+		if err := rows.Scan(&m.ID, &m.Source, &m.CreatedAt, &m.Status, &m.Title); err != nil {
 			srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 			return
 		}

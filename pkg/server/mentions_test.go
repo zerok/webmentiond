@@ -43,13 +43,30 @@ func setMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
 	require.NoError(t, err)
 }
 
+func setMentionTitle(t *testing.T, db *sql.DB, id string, title string) {
+	t.Helper()
+	_, err := db.Exec("UPDATE webmentions SET title = ? WHERE id = ?", title, id)
+	require.NoError(t, err)
+}
+
 func requireMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
 	t.Helper()
 	ctx := context.Background()
 	var actual string
 	require.NoError(t, db.QueryRowContext(ctx, "SELECT status FROM webmentions WHERE id = ?", id).Scan(&actual))
 	if actual != status {
-		t.Errorf("Mention %s was expected to have status %s but has %s instead.", id, status, actual)
+		t.Errorf("Mention %s was expected to have status `%s` but has `%s` instead.", id, status, actual)
+		t.Fail()
+	}
+}
+
+func requireMentionTitle(t *testing.T, db *sql.DB, id string, title string) {
+	t.Helper()
+	ctx := context.Background()
+	var actual string
+	require.NoError(t, db.QueryRowContext(ctx, "SELECT title FROM webmentions WHERE id = ?", id).Scan(&actual))
+	if actual != title {
+		t.Errorf("Mention %s was expected to have title `%s` but has `%s` instead.", id, title, actual)
 		t.Fail()
 	}
 }
@@ -59,6 +76,7 @@ func TestPagingMentions(t *testing.T) {
 	defer db.Close()
 	srv := setupServer(t, db)
 	createMention(t, db, "a", "a", "b")
+	setMentionTitle(t, db, "a", "title")
 	createMention(t, db, "b", "b", "c")
 	createMention(t, db, "c", "c", "d")
 
@@ -78,6 +96,7 @@ func TestPagingMentions(t *testing.T) {
 	require.Equal(t, 3, res.Total)
 	require.Len(t, res.Items, 1)
 	require.Equal(t, "a", res.Items[0].ID)
+	require.Equal(t, "title", res.Items[0].Title)
 
 	// Now, let's page through all the result-sets:
 	require.NotEmpty(t, res.Next)

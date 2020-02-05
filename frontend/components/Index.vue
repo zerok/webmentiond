@@ -7,6 +7,7 @@
   <ul v-if="mentions && mentions.length" class="mention-list">
     <li v-for="mention in mentions" class="mention">
       <div class="mention__info">
+        <span class="mention__title" v-if="mention.title">{{ mention.title }}</span>
         <a class="mention__source" :href="mention.source">{{ mention.source }}</a>
         <i class="fas fa-long-arrow-alt-right mention__to"></i>
         <a class="mention__target" :href="mention.target">{{ mention.target }}</a>

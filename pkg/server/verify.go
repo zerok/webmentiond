@@ -35,7 +35,8 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
 		newStatus = MentionStatusInvalid
 	}
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE id = ?", newStatus, m.ID); err != nil {
+	logger.Debug().Msgf("title: %s", mention.Title)
+	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? WHERE id = ?", newStatus, mention.Title, m.ID); err != nil {
 		tx.Rollback()
 		return true, err
 	} else {
