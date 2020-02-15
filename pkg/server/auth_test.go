@@ -42,8 +42,11 @@ func TestAuthentication(t *testing.T) {
 	srv.ServeHTTP(w, r)
 	require.Equal(t, w.Code, http.StatusOK)
 	require.Len(t, m.Messages, 1)
-
+	// The email should contain the link to log in and the authentication token
+	// on a seperate line:
 	token := srv.validToken["valid"]
+	require.Equal(t, fmt.Sprintf("/ui/#/authenticate/%s\n\n%s", token, token), m.Messages[0].Body)
+
 	require.NotEmpty(t, token)
 	w = httptest.NewRecorder()
 	r = httptest.NewRequest(http.MethodPost, "/authenticate?token="+token, nil)
