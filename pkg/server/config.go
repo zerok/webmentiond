@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/zerok/webmentiond/pkg/mailer"
 )
@@ -41,6 +42,7 @@ type SenderConfiguration struct{}
 type AuthConfiguration struct {
 	AdminEmails []string
 	JWTSecret   string
+	JWTTTL      time.Duration
 }
 
 type Configuration struct {

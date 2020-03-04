@@ -8,7 +8,9 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 	"github.com/zerok/webmentiond/pkg/mailer"
@@ -21,6 +23,7 @@ func TestAuthentication(t *testing.T) {
 	srv := New(func(c *Configuration) {
 		c.Mailer = m
 		c.Auth.AdminEmails = []string{"valid"}
+		c.Auth.JWTTTL = time.Hour * 24 * 7
 	})
 
 	w := httptest.NewRecorder()
@@ -82,4 +85,16 @@ func TestAuthentication(t *testing.T) {
 		w.WriteHeader(200)
 	})).ServeHTTP(w, r.WithContext(ctx))
 	require.Equal(t, w.Code, http.StatusOK)
+
+	// Let's make sure that the bearer token has the expected expiration time:
+	jwt.Parse(string(jot), func(token *jwt.Token) (interface{}, error) {
+		claims, _ := token.Claims.(jwt.MapClaims)
+		rawExp := claims["exp"]
+		if exp, ok := rawExp.(float64); ok {
+			expTime := time.Unix(int64(exp), 0)
+			fmt.Println(expTime)
+			require.InDelta(t, expTime.Unix(), time.Now().Add(time.Hour*24*7).Unix(), 5)
+		}
+		return []byte{}, nil
+	})
 }

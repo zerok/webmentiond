@@ -122,10 +122,11 @@ func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("token invalid")})
 		return
 	}
+	exp := time.Now().Add(srv.cfg.Auth.JWTTTL).Unix()
 	claims := &jwt.StandardClaims{
 		Issuer:    "webmentiond",
 		Subject:   matchingMail,
-		ExpiresAt: time.Now().Add(time.Hour * 24 * 2).Unix(),
+		ExpiresAt: exp,
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	signedToken, err := token.SignedString([]byte(srv.cfg.Auth.JWTSecret))
