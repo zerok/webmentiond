@@ -60,7 +60,7 @@ func (s *simpleSender) Send(ctx context.Context, endpoint string, mention Mentio
 	if err != nil {
 		return fmt.Errorf("webmention request failed: %w", err)
 	}
-	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusAccepted && resp.StatusCode != http.StatusCreated && resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("unexpected status code returned: %v", resp.StatusCode)
 	}
 	return nil
