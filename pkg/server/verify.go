@@ -45,6 +45,7 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 			return true, err
 		}
 		logger.Info().Msgf("%s -> %s verified", m.Source, m.Target)
+		srv.UpdateGlobalMetrics(ctx)
 		return true, nil
 	}
 }

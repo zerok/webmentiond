@@ -14,6 +14,7 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/zerok/webmentiond/pkg/mailer"
 )
@@ -61,6 +62,7 @@ func New(configurators ...Configurator) *Server {
 	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
 	})
+	srv.router.Handle("/metrics", promhttp.Handler())
 	srv.router.Post("/receive", srv.handleReceive)
 	srv.router.Post("/request-login", srv.handleLogin)
 	srv.router.Post("/authenticate", srv.handleAuthenticate)
@@ -71,6 +73,30 @@ func New(configurators ...Configurator) *Server {
 	})
 	srv.router.Get("/get", srv.handleGet)
 	return srv
+}
+
+func (srv *Server) UpdateGlobalMetrics(ctx context.Context) error {
+	tx, err := srv.cfg.Database.BeginTx(ctx, &sql.TxOptions{
+		ReadOnly: true,
+	})
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	var totalCount int64
+	var count int64
+	if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM webmentions").Scan(&totalCount); err != nil {
+		return err
+	}
+	var status = []string{"approved", "verified", "new", "invalid", "rejected"}
+	for _, s := range status {
+		if err := tx.QueryRowContext(ctx, "SELECT count(*) FROM webmentions WHERE status = ?", s).Scan(&count); err != nil {
+			return err
+		}
+		mentionsGauge.With(map[string]string{"status": s}).Set(float64(count))
+	}
+	totalMentionsGauge.Set(float64(totalCount))
+	return nil
 }
 
 func (srv *Server) handleIndex(w http.ResponseWriter, r *http.Request) {

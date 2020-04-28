@@ -101,6 +101,9 @@ func newServeCmd() Command {
 			httpSrv.Addr = addr
 			httpSrv.Handler = srv
 			srv.StartVerifier(ctx)
+			if err := srv.UpdateGlobalMetrics(ctx); err != nil {
+				return err
+			}
 			logger.Info().Msgf("Listening on %s...", addr)
 			return httpSrv.ListenAndServe()
 		},

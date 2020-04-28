@@ -147,6 +147,7 @@ func (srv *Server) handleMentionStatusUpdate(w http.ResponseWriter, r *http.Requ
 		tx.Rollback()
 		return
 	}
+	srv.UpdateGlobalMetrics(ctx)
 }
 
 func (srv *Server) handleRejectMention(w http.ResponseWriter, r *http.Request) {

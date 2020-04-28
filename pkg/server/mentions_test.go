@@ -128,6 +128,7 @@ func TestPagingMentions(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
 	require.Equal(t, 0, res.Total)
+	requireMetricValue(t, context.Background(), srv, "webmentiond_mentions{status=\verified\"}", 0)
 }
 
 func TestApprovingMention(t *testing.T) {
@@ -148,6 +149,7 @@ func TestApprovingMention(t *testing.T) {
 	w = httptest.NewRecorder()
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusNotFound, w.Code)
+	requireMetricValue(t, context.Background(), srv, "webmentiond_mentions{status=\approved\"}", 1)
 }
 
 func TestRejectingMention(t *testing.T) {
@@ -168,4 +170,5 @@ func TestRejectingMention(t *testing.T) {
 	w = httptest.NewRecorder()
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusNotFound, w.Code)
+	requireMetricValue(t, context.Background(), srv, "webmentiond_mentions{status=\rejected\"}", 1)
 }

@@ -9,6 +9,8 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -92,6 +94,28 @@ func TestReceiver(t *testing.T) {
 	srv.ServeHTTP(w, req.WithContext(ctx))
 	require.Equal(t, 201, w.Code)
 	requireMentionWithStatus(t, ctx, db, "https://target.zerokspot.com", "new")
+	requireMetricValue(t, ctx, srv, "webmentiond_mentions_total", 1)
+	requireMetricValue(t, ctx, srv, "webmentiond_mentions{status=\"new\"}", 1)
+	requireMetricValue(t, ctx, srv, "webmentiond_mentions{status=\"approved\"}", 0)
+}
+
+func requireMetricValue(t *testing.T, ctx context.Context, srv *server.Server, metric string, value float64) {
+	req := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req.WithContext(ctx))
+	require.Equal(t, http.StatusOK, w.Code)
+	for _, line := range strings.Split(w.Body.String(), "\n") {
+		elems := strings.Split(strings.TrimSpace(line), " ")
+		if len(elems) < 2 || elems[0] != metric {
+			continue
+		}
+		val, err := strconv.ParseFloat(elems[1], 64)
+		if err != nil {
+			require.FailNow(t, err.Error())
+			return
+		}
+		require.Equal(t, value, val)
+	}
 }
 
 func requireListOfMentions(t *testing.T, w *httptest.ResponseRecorder) []webmention.Mention {
