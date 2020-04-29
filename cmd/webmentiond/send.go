@@ -10,7 +10,7 @@ import (
 
 func newSendCmd() Command {
 	var sendCmd = &cobra.Command{
-		Use:   "send SOURCE TARGET",
+		Use:   "send SOURCE [TARGET]",
 		Short: "Send a mention from source to target",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := logger.WithContext(context.Background())
