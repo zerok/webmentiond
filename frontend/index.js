@@ -2,6 +2,7 @@ import Vue from 'vue';
 import App from './components/App.vue';
 import Index from './components/Index.vue';
 import Login from './components/Login.vue';
+import Send from './components/Send.vue';
 import Authenticate from './components/Authenticate.vue';
 import Vuex from 'vuex';
 import Router from 'vue-router';
@@ -28,6 +29,8 @@ const store = new Vuex.Store({
     mentions: null,
     requestTokenStatus: null,
     getMentionsStatus: null,
+    sendStatus: null,
+    sendStatusReport: null,
     updateMentionStatusStatus: null,
     mentionFilterStatus: 'verified',
   },
@@ -43,6 +46,12 @@ const store = new Vuex.Store({
     },
     updateRequestTokenStatus(state, newStatus) {
       state.requestTokenStatus = newStatus;
+    },
+    sendStatus(state, newStatus) {
+      state.sendStatus = newStatus;
+    },
+    sendStatusReport(state, newStatus) {
+      state.sendStatusReport = newStatus;
     },
     updateGetMentionsStatus(state, newStatus) {
       state.getMentionsStatus = newStatus;
@@ -70,6 +79,25 @@ const store = new Vuex.Store({
       } catch(e) {
         console.log(e);
         context.commit('updateAuthStatus', 'failed');
+      }
+    },
+    async sendMention(context, source) {
+      context.commit('sendStatus', 'pending');
+      context.commit('sendStatusReport', null);
+      try {
+        const resp = await transport.post(`${API_BASE_URL}/manage/send`, JSON.stringify({
+          source,
+        }));
+        context.commit('sendStatus', 'succeeded');
+        context.commit('sendStatusReport', resp.data);
+      } catch (e) {
+        if (e.response && e.response.status === 401) {
+            context.commit('logout');
+        }
+        if (typeof e.response.data === 'object') {
+          context.commit('sendStatusReport', e.response.data);
+        }
+        context.commit('sendStatus', 'failed');
       }
     },
     async getMentions(context, filter) {
@@ -168,6 +196,20 @@ const router = new Router({
       component: Index,
       meta: {
         title: 'Mentions'
+      },
+      beforeEnter: (to, from, next) => {
+        if(!store.state.loggedIn) {
+          next('/login');
+          return;
+        }
+        next();
+      }
+    },
+    {
+      path: '/send',
+      component: Send,
+      meta: {
+        title: 'Send'
       },
       beforeEnter: (to, from, next) => {
         if(!store.state.loggedIn) {

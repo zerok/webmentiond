@@ -70,6 +70,7 @@ func New(configurators ...Configurator) *Server {
 		r.Get("/mentions", srv.handleListMentions)
 		r.Post("/mentions/{id}/approve", srv.handleApproveMention)
 		r.Post("/mentions/{id}/reject", srv.handleRejectMention)
+		r.Post("/send", srv.handleSend)
 	})
 	srv.router.Get("/get", srv.handleGet)
 	return srv

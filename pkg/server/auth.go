@@ -132,6 +132,7 @@ func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 	signedToken, err := token.SignedString([]byte(srv.cfg.Auth.JWTSecret))
 	if err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
+		return
 	}
 	w.Header().Set("Content-Type", "application/jwt")
 	w.Write([]byte(signedToken))

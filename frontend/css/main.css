@@ -126,8 +126,18 @@ a {
     text-align: right;
 }
 
+.topnav__left {
+    text-align: left;
+    float: left;
+}
+
 .topnav a {
     color: #FFF;
+}
+
+.topnav__left a {
+  font-weight: bold;
+  text-decoration: none;
 }
 
 .main {
@@ -139,4 +149,30 @@ a {
     margin: 0;
     background: #CCC;
     color: var(--blue);
+}
+
+.sendreport {
+  list-style: none;
+  padding: 0;
+}
+
+.sendreport__item {
+  padding: 5px;
+  background: #EFEFEF;
+  margin-bottom: 2px;
+}
+.sendreport__item--success {
+  background: var(--green);
+}
+.sendreport__item--failure {
+  background: var(--red);
+}
+.sendreport__item__url,
+.sendreport__item__error,
+.sendreport__item__endpoint {
+  display: block;
+}
+.sendreport__item__error,
+.sendreport__item__endpoint {
+  font-size: 70%;
 }
