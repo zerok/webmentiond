@@ -2,11 +2,11 @@
   <div>
   <h1 class="title">Send mention</h1>
   <div class="main">
-    <Loading v-if="sendStatus == 'pending'"/>
     <form @submit.prevent>
-      <input type="text" v-model="source">
-      <button type="submit" @click="submit">Send</button>
+      <input class="input--url input" type="text" v-model="source">
+      <button class="button button--action button--primary" type="submit" @click="submit">Send</button>
     </form>
+    <Loading v-if="sendStatus == 'pending'"/>
     <ul v-if="sendStatusReport" class="sendreport">
         <li :class="{'sendreport__item': true, 'sendreport__item--success': target.endpoint && !target.error, 'sendreport__item--failure': target.error}" v-for="target in sendStatusReport.targets">
           <a class="sendreport__item__url" :href="target.url">{{ target.url }}</a>
