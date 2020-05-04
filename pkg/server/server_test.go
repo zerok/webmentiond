@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -97,6 +98,59 @@ func TestReceiver(t *testing.T) {
 	requireMetricValue(t, ctx, srv, "webmentiond_mentions_total", 1)
 	requireMetricValue(t, ctx, srv, "webmentiond_mentions{status=\"new\"}", 1)
 	requireMetricValue(t, ctx, srv, "webmentiond_mentions{status=\"approved\"}", 0)
+	// Let's empty the verification queue
+	srv.VerifyNextMention(ctx)
+
+	t.Run("handle-delete", func(t *testing.T) {
+		exists := true
+		src := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if !exists {
+				http.Error(w, "Gone", http.StatusGone)
+			} else {
+				fmt.Fprintf(w, "<html><body><a href=\"https://target.zerokspot.com\">target</a></body></html>")
+			}
+		}))
+		w = httptest.NewRecorder()
+		data := url.Values{}
+		data.Set("source", src.URL)
+		data.Set("target", "https://target.zerokspot.com")
+		req = httptest.NewRequest(http.MethodPost, "/receive", bytes.NewBufferString(data.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		srv.ServeHTTP(w, req.WithContext(ctx))
+		require.Equal(t, 201, w.Code)
+		var count int
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions").Scan(&count))
+		require.Equal(t, 2, count)
+		ok, err := srv.VerifyNextMention(ctx)
+		require.NoError(t, err)
+		require.True(t, ok)
+
+		// Let's now resubmit the mentioning URL after it has been removed:
+		exists = false
+		req := httptest.NewRequest(http.MethodPost, "/receive", bytes.NewBufferString(data.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		srv.ServeHTTP(w, req.WithContext(ctx))
+		require.Equal(t, 201, w.Code)
+		ok, err = srv.VerifyNextMention(ctx)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions WHERE source = ? AND status = 'invalid'", src.URL).Scan(&count))
+		require.Equal(t, 1, count)
+
+		// If we make the URL available again, it should be valid again:
+		exists = true
+		req = httptest.NewRequest(http.MethodPost, "/receive", bytes.NewBufferString(data.Encode()))
+		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		srv.ServeHTTP(w, req.WithContext(ctx))
+		require.Equal(t, 201, w.Code)
+		ok, err = srv.VerifyNextMention(ctx)
+		require.NoError(t, err)
+		require.True(t, ok)
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions WHERE source = ? AND status = 'verified'", src.URL).Scan(&count))
+		require.Equal(t, 1, count)
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions").Scan(&count))
+		require.Equal(t, 2, count)
+	})
 }
 
 func requireMetricValue(t *testing.T, ctx context.Context, srv *server.Server, metric string, value float64) {

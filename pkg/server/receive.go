@@ -34,15 +34,21 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 	now := time.Now()
 	id := xid.New()
 	if _, err = tx.ExecContext(ctx, "insert into webmentions (id, source, target, created_at, status) VALUES (?, ?, ?, ?, ?)", id.String(), m.Source, m.Target, now.Format(time.RFC3339), MentionStatusNew); err != nil {
-		tx.Rollback()
 		if e, ok := err.(sqlite3.Error); ok && e.Code == sqlite3.ErrConstraint {
-			// TODO: The mention already exists. Set the
-			// re-check pending status so that it gets
-			// verified again at the next best occasion.
+			if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? WHERE source = ? and target = ?", MentionStatusNew, m.Source, m.Target); err != nil {
+				srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
+				tx.Rollback()
+				return
+			}
+			if err := tx.Commit(); err != nil {
+				tx.Rollback()
+				srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
+			}
 			w.WriteHeader(201)
 			return
 		}
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
+		tx.Rollback()
 		return
 	}
 	if err := tx.Commit(); err != nil {
