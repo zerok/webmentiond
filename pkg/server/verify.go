@@ -19,7 +19,14 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		return false, err
 	}
 	m := Mention{}
-	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? LIMIT 1", MentionStatusNew).Scan(&m.ID, &m.Source, &m.Target); err != nil {
+	// The last verification must be at least a minute in the past
+	valid_last_verification := time.Now()
+	if srv.cfg.VerificationTimeoutDuration != 0 {
+		valid_last_verification = valid_last_verification.Add(-1 * srv.cfg.VerificationTimeoutDuration)
+	} else {
+		valid_last_verification = valid_last_verification.Add(time.Second)
+	}
+	if err := tx.QueryRowContext(ctx, "SELECT id, source, target FROM webmentions WHERE status = ? AND (verified_at = '' OR verified_at) < ? LIMIT 1", MentionStatusNew, valid_last_verification.Format(time.RFC3339)).Scan(&m.ID, &m.Source, &m.Target); err != nil {
 		tx.Rollback()
 		if err == sql.ErrNoRows {
 			return false, nil
@@ -32,11 +39,10 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		Target: m.Target,
 	}
 	if err := webmention.Verify(ctx, &mention); err != nil {
-		logger.Error().Err(err).Msgf("Failed to verify %s", m.Source)
 		newStatus = MentionStatusInvalid
 	}
 	logger.Debug().Msgf("title: %s", mention.Title)
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? WHERE id = ?", newStatus, mention.Title, m.ID); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? , verified_at = ? WHERE id = ?", newStatus, mention.Title, time.Now().Format(time.RFC3339), m.ID); err != nil {
 		tx.Rollback()
 		return true, err
 	} else {
@@ -44,7 +50,7 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 			tx.Rollback()
 			return true, err
 		}
-		logger.Info().Msgf("%s -> %s verified", m.Source, m.Target)
+		logger.Debug().Msgf("%s -> %s checked: %v", m.Source, m.Target, newStatus)
 		srv.UpdateGlobalMetrics(ctx)
 		return true, nil
 	}

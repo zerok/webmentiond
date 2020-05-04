@@ -46,17 +46,18 @@ type AuthConfiguration struct {
 }
 
 type Configuration struct {
-	Context          context.Context
-	Database         *sql.DB
-	MigrationsFolder string
-	Receiver         ReceiverConfiguration
-	Sender           SenderConfiguration
-	Auth             AuthConfiguration
-	MailFrom         string
-	Mailer           mailer.Mailer
-	AllowedOrigins   []string
-	PublicURL        string
-	UIPath           string
+	Context                     context.Context
+	Database                    *sql.DB
+	MigrationsFolder            string
+	Receiver                    ReceiverConfiguration
+	Sender                      SenderConfiguration
+	Auth                        AuthConfiguration
+	MailFrom                    string
+	Mailer                      mailer.Mailer
+	AllowedOrigins              []string
+	PublicURL                   string
+	UIPath                      string
+	VerificationTimeoutDuration time.Duration
 }
 
 type Configurator func(c *Configuration)

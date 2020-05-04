@@ -102,12 +102,15 @@ func TestReceiver(t *testing.T) {
 	srv.VerifyNextMention(ctx)
 
 	t.Run("handle-delete", func(t *testing.T) {
+		_, err = db.ExecContext(ctx, "DELETE FROM webmentions")
+		require.NoError(t, err)
 		exists := true
+		title := "default title"
 		src := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if !exists {
 				http.Error(w, "Gone", http.StatusGone)
 			} else {
-				fmt.Fprintf(w, "<html><body><a href=\"https://target.zerokspot.com\">target</a></body></html>")
+				fmt.Fprintf(w, "<html><title>%s</title><body><a href=\"https://target.zerokspot.com\">target</a></body></html>", title)
 			}
 		}))
 		w = httptest.NewRecorder()
@@ -118,15 +121,18 @@ func TestReceiver(t *testing.T) {
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		srv.ServeHTTP(w, req.WithContext(ctx))
 		require.Equal(t, 201, w.Code)
-		var count int
-		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions").Scan(&count))
-		require.Equal(t, 2, count)
 		ok, err := srv.VerifyNextMention(ctx)
 		require.NoError(t, err)
 		require.True(t, ok)
+		var status string
+		var mentionTitle string
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT status, title FROM webmentions WHERE source = ?", src.URL).Scan(&status, &mentionTitle))
+		require.Equal(t, "verified", status)
+		require.Equal(t, title, mentionTitle)
 
 		// Let's now resubmit the mentioning URL after it has been removed:
 		exists = false
+		title = ""
 		req := httptest.NewRequest(http.MethodPost, "/receive", bytes.NewBufferString(data.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		srv.ServeHTTP(w, req.WithContext(ctx))
@@ -134,11 +140,13 @@ func TestReceiver(t *testing.T) {
 		ok, err = srv.VerifyNextMention(ctx)
 		require.NoError(t, err)
 		require.True(t, ok)
-		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions WHERE source = ? AND status = 'invalid'", src.URL).Scan(&count))
-		require.Equal(t, 1, count)
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT status, title FROM webmentions WHERE source = ?", src.URL).Scan(&status, &mentionTitle))
+		require.Equal(t, "invalid", status)
+		require.Equal(t, title, mentionTitle)
 
 		// If we make the URL available again, it should be valid again:
 		exists = true
+		title = "updated"
 		req = httptest.NewRequest(http.MethodPost, "/receive", bytes.NewBufferString(data.Encode()))
 		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 		srv.ServeHTTP(w, req.WithContext(ctx))
@@ -146,10 +154,9 @@ func TestReceiver(t *testing.T) {
 		ok, err = srv.VerifyNextMention(ctx)
 		require.NoError(t, err)
 		require.True(t, ok)
-		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions WHERE source = ? AND status = 'verified'", src.URL).Scan(&count))
-		require.Equal(t, 1, count)
-		require.NoError(t, db.QueryRowContext(ctx, "SELECT count(*) FROM webmentions").Scan(&count))
-		require.Equal(t, 2, count)
+		require.NoError(t, db.QueryRowContext(ctx, "SELECT status, title FROM webmentions WHERE source = ?", src.URL).Scan(&status, &mentionTitle))
+		require.Equal(t, "verified", status)
+		require.Equal(t, title, mentionTitle)
 	})
 }
 
