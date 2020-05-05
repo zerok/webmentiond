@@ -22,9 +22,12 @@ var ErrInvalidRequest = errors.New("the request does not contain a source and a 
 
 // Mention is what is sent to a receiver linking source and target.
 type Mention struct {
-	Source string
-	Target string
-	Title  string
+	Source     string
+	Target     string
+	Title      string
+	Content    string
+	AuthorName string
+	Type       string
 }
 
 // ExtractMention parses a given request object and tries to extract

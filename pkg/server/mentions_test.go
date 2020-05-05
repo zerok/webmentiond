@@ -43,6 +43,18 @@ func setMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
 	require.NoError(t, err)
 }
 
+func setMentionType(t *testing.T, db *sql.DB, id string, typ string) {
+	t.Helper()
+	_, err := db.Exec("UPDATE webmentions SET type = ? WHERE id = ?", typ, id)
+	require.NoError(t, err)
+}
+
+func setMentionContent(t *testing.T, db *sql.DB, id string, content string) {
+	t.Helper()
+	_, err := db.Exec("UPDATE webmentions SET content = ? WHERE id = ?", content, id)
+	require.NoError(t, err)
+}
+
 func setMentionTitle(t *testing.T, db *sql.DB, id string, title string) {
 	t.Helper()
 	_, err := db.Exec("UPDATE webmentions SET title = ? WHERE id = ?", title, id)
@@ -77,6 +89,7 @@ func TestPagingMentions(t *testing.T) {
 	srv := setupServer(t, db)
 	createMention(t, db, "a", "a", "b")
 	setMentionTitle(t, db, "a", "title")
+	setMentionContent(t, db, "a", "content")
 	createMention(t, db, "b", "b", "c")
 	createMention(t, db, "c", "c", "d")
 
@@ -97,6 +110,7 @@ func TestPagingMentions(t *testing.T) {
 	require.Len(t, res.Items, 1)
 	require.Equal(t, "a", res.Items[0].ID)
 	require.Equal(t, "title", res.Items[0].Title)
+	require.Equal(t, "content", res.Items[0].Content)
 
 	// Now, let's page through all the result-sets:
 	require.NotEmpty(t, res.Next)

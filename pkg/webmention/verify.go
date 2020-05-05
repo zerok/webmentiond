@@ -1,6 +1,7 @@
 package webmention
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/zerok/webmentiond/pkg/shorteners"
 	"golang.org/x/net/html"
+	"willnorris.com/go/microformats"
 )
 
 // Verify uses a basic HTTP client and a default Verifier.
@@ -38,13 +40,22 @@ type htmlVerifier struct {
 }
 
 func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error {
-	tokenizer := html.NewTokenizer(body)
+	var tokenBuffer bytes.Buffer
+	var mfBuffer bytes.Buffer
+	sourceURL, err := url.Parse(mention.Source)
+	if err != nil {
+		return err
+	}
+	io.Copy(io.MultiWriter(&tokenBuffer, &mfBuffer), body)
+	tokenizer := html.NewTokenizer(&tokenBuffer)
+	mf := microformats.Parse(&mfBuffer, sourceURL)
 	inTitle := false
 	title := ""
 	u, err := url.Parse(mention.Source)
 	if err == nil {
 		title = u.Hostname()
 	}
+	var contentOK bool
 loop:
 	for {
 		tt := tokenizer.Next()
@@ -74,7 +85,8 @@ loop:
 				href := getAttr(tokenizer, "href")
 				if href == mention.Target {
 					mention.Title = title
-					return nil
+					contentOK = true
+					continue
 				}
 				link, err := shorteners.Resolve(ctx, href)
 				if err != nil {
@@ -82,13 +94,68 @@ loop:
 				}
 				if link == mention.Target {
 					mention.Title = title
-					return nil
+					contentOK = true
+					continue
 				}
 			}
 
 		}
 	}
-	return fmt.Errorf("target not found in content")
+	if !contentOK {
+		return fmt.Errorf("target not found in content")
+	}
+	mfFillMentionFromData(mention, mf)
+	return nil
+}
+
+func mfFillMentionFromData(mention *Mention, mf *microformats.Data) {
+	for _, i := range mf.Items {
+		mfFillMention(mention, i)
+	}
+}
+
+func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
+	if mfHasType(mf, "h-entry") {
+		if name, ok := mf.Properties["name"]; ok && len(name) > 0 {
+			mention.Title = name[0].(string)
+		}
+		if commented, ok := mf.Properties["in-reply-to"]; ok && len(commented) > 0 {
+			mention.Type = "comment"
+		}
+		if contents, ok := mf.Properties["content"]; ok && len(contents) > 0 {
+			if content, ok := contents[0].(map[string]interface{}); ok {
+				if rawContentValue, ok := content["value"]; ok {
+					if contentValue, ok := rawContentValue.(string); ok {
+						mention.Content = contentValue
+					}
+				}
+			}
+		}
+		if authors, ok := mf.Properties["author"]; ok && len(authors) > 0 {
+			if author, ok := authors[0].(*microformats.Microformat); ok {
+				if names, ok := author.Properties["name"]; ok && len(names) > 0 {
+					mention.AuthorName = names[0].(string)
+				}
+			}
+		}
+		return true
+	} else if len(mf.Children) > 0 {
+		for _, m := range mf.Children {
+			if mfFillMention(mention, m) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func mfHasType(mf *microformats.Microformat, typ string) bool {
+	for _, t := range mf.Type {
+		if typ == t {
+			return true
+		}
+	}
+	return false
 }
 
 // NewVerifier creates a new verifier instance.

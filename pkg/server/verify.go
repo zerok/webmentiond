@@ -42,7 +42,7 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		newStatus = MentionStatusInvalid
 	}
 	logger.Debug().Msgf("title: %s", mention.Title)
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? , verified_at = ? WHERE id = ?", newStatus, mention.Title, time.Now().Format(time.RFC3339), m.ID); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? , verified_at = ?, type = ?, content = ?, author_name = ? WHERE id = ?", newStatus, mention.Title, time.Now().Format(time.RFC3339), mention.Type, mention.Content, mention.AuthorName, m.ID); err != nil {
 		tx.Rollback()
 		return true, err
 	} else {
