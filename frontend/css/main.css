@@ -112,6 +112,7 @@ a {
     text-align: right;
 }
 
+.mention__created_at,
 .mention__source {
     display: block;
 }
