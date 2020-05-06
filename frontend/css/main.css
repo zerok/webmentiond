@@ -76,6 +76,13 @@ a {
     padding: 10px 0;
 }
 
+
+.mention__content {
+    margin: 10px 0;
+    font-size: 12px;
+    line-height: 16px;
+}
+
 .mention-filters__status {
     border-bottom: 1px solid #AAA;
 }
@@ -112,7 +119,7 @@ a {
 .mention__created_at,
 .mention__target,
 .mention__to {
-    font-size: 80%;
+    font-size: 12px;
     opacity: 0.6;
 }
 

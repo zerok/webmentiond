@@ -12,6 +12,9 @@
         <i class="fas fa-long-arrow-alt-right mention__to"></i>
         <a class="mention__target" :href="mention.target">{{ mention.target }}</a>
         <span class="mention__created_at">({{ mention.created_at }})</span>
+        <div class="mention__content" v-if="mention.content">
+          {{ mention.content }}
+        </div>
       </div>
       <div class="mention__actions">
       <button class="button button--small button--positive" v-on:click="approve(mention)"><i class="far fa-thumbs-up"></i> approve</button>
