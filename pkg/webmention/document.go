@@ -71,6 +71,8 @@ loop:
 				break loop
 			}
 			return nil, err
+		case html.SelfClosingTagToken:
+			fallthrough
 		case html.StartTagToken:
 			name, _ := tokenizer.TagName()
 			if string(name) == "a" {
