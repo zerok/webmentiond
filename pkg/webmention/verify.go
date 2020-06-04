@@ -76,6 +76,8 @@ loop:
 				break loop
 			}
 			return err
+		case html.SelfClosingTagToken:
+			fallthrough
 		case html.StartTagToken:
 			tagName, _ := tokenizer.TagName()
 			switch string(tagName) {
