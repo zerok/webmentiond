@@ -107,6 +107,9 @@ loop:
 		return fmt.Errorf("target not found in content")
 	}
 	mfFillMentionFromData(mention, mf)
+	if mention.RSVP != "" {
+		mention.Type = "rsvp"
+	}
 	return nil
 }
 
@@ -123,6 +126,9 @@ func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
 		}
 		if commented, ok := mf.Properties["in-reply-to"]; ok && len(commented) > 0 {
 			mention.Type = "comment"
+		}
+		if rsvp, ok := mf.Properties["rsvp"]; ok && len(rsvp) > 0 {
+			mention.RSVP = rsvp[0].(string)
 		}
 		if contents, ok := mf.Properties["content"]; ok && len(contents) > 0 {
 			if content, ok := contents[0].(map[string]interface{}); ok {

@@ -81,4 +81,29 @@ func TestVerify(t *testing.T) {
 		require.Equal(t, "Author", mention.AuthorName)
 		require.Equal(t, "comment", mention.Type)
 	})
+
+	t.Run("rsvp-extraction", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		t.Run("non-data", func(t *testing.T) {
+			mention := webmention.Mention{
+				Source: "...",
+				Target: "https://target.com",
+			}
+			err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><div class=\"h-entry\"><h1 class=\"p-name\">Actual title</h1><a href=\"/\" class=\"u-author h-card\">Author</a><div class=\"e-content\"><p>content</p> <p>next</p></div><span class=\"p-rsvp\">yes</span><a class=\"u-in-reply-to\" href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></div></body></html>"), &mention)
+			require.NoError(t, err)
+			require.Equal(t, "rsvp", mention.Type)
+			require.Equal(t, "yes", mention.RSVP)
+		})
+		t.Run("data", func(t *testing.T) {
+			mention := webmention.Mention{
+				Source: "...",
+				Target: "https://target.com",
+			}
+			err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><div class=\"h-entry\"><h1 class=\"p-name\">Actual title</h1><a href=\"/\" class=\"u-author h-card\">Author</a><div class=\"e-content\"><p>content</p> <p>next</p></div><data class=\"p-rsvp\" value=\"yes\">I'll be there!</data><a class=\"u-in-reply-to\" href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></div></body></html>"), &mention)
+			require.NoError(t, err)
+			require.Equal(t, "rsvp", mention.Type)
+			require.Equal(t, "yes", mention.RSVP)
+		})
+	})
 }

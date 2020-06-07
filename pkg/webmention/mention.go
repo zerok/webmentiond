@@ -28,6 +28,7 @@ type Mention struct {
 	Content    string
 	AuthorName string
 	Type       string
+	RSVP       string
 }
 
 // ExtractMention parses a given request object and tries to extract

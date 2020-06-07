@@ -45,7 +45,7 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		mention.Content = mention.Content[0:497] + "…"
 	}
 	logger.Debug().Msgf("title: %s", mention.Title)
-	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? , verified_at = ?, type = ?, content = ?, author_name = ? WHERE id = ?", newStatus, mention.Title, time.Now().Format(time.RFC3339), mention.Type, mention.Content, mention.AuthorName, m.ID); err != nil {
+	if _, err := tx.ExecContext(ctx, "UPDATE webmentions SET status = ? , title = ? , verified_at = ?, type = ?, content = ?, author_name = ?, rsvp = ? WHERE id = ?", newStatus, mention.Title, time.Now().Format(time.RFC3339), mention.Type, mention.Content, mention.AuthorName, mention.RSVP, m.ID); err != nil {
 		tx.Rollback()
 		return true, err
 	} else {
