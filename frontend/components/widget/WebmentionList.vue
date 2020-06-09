@@ -1,6 +1,7 @@
 <template>
 <div class="webmention-list">
-  <p v-if="!mentions">This page hasn't been mentioned anywhere yet.</p>
+  <p v-if="!mentions">Loading...</p>
+  <p v-if="mentions && !mentions.length">This page hasn't been mentioned anywhere yet.</p>
   <ul class="webmention-list__list" v-if="mentions">
     <li v-for="mention in mentions" :key="mention.id">
       <div class="webmention webmention--comment" v-if="mention.type == 'comment'">
