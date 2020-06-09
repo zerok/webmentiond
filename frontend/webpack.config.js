@@ -2,7 +2,10 @@ const Path = require('path');
 const VueLoaderPlugin = require('vue-loader/lib/plugin');
 
 module.exports = {
-  entry: './index.js',
+  entry: {
+      bundle: './index.js', 
+      widget: './widget.js'
+  },
   mode: 'development',
   module: {
     rules: [
@@ -14,7 +17,7 @@ module.exports = {
   },
   output: {
     path: Path.resolve(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   plugins: [
     new VueLoaderPlugin()
