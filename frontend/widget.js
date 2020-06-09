@@ -29,9 +29,7 @@ var app = new Vue({
         Widget
     },
     beforeMount: function() {
-        this.$data.endpoint = this.$el.getAttribute('data-endpoint');
-        this.$data.target = this.$el.getAttribute('data-target');
-        this.$data.title = this.$el.getAttribute('data-title');
+        this.$data.config = this.$el.dataset;
         const rawContent = this.$el.innerText;
         this.$data.mentions = null;
         if (rawContent) {
@@ -42,8 +40,9 @@ var app = new Vue({
         return createElement('Widget', {
             props: {
                 title: this.$data.title || 'Mentions',
-                endpoint: this.$data.endpoint,
-                target: this.$data.target,
+                endpoint: this.$data.config.endpoint,
+                target: this.$data.config.target,
+                showRSVPSummary: this.$data.config.rsvpSummary === 'yes',
                 mentions: this.$data.mentions || null,
             }
         });
