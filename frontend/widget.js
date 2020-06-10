@@ -39,7 +39,7 @@ var app = new Vue({
     render: function (createElement) {
         return createElement('Widget', {
             props: {
-                title: this.$data.title || 'Mentions',
+                title: this.$data.config.title || 'Mentions',
                 endpoint: this.$data.config.endpoint,
                 target: this.$data.config.target,
                 showRSVPSummary: this.$data.config.rsvpSummary === 'yes',
