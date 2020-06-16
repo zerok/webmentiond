@@ -21,11 +21,7 @@ jobs:
       with:
         go-version: "1.14.4"
     - name: Create package
-      run: |
-        set -e
-        wget https://github.com/goreleaser/goreleaser/releases/download/v0.138.0/goreleaser_amd64.deb
-        dpkg -i goreleaser_amd64.deb
-        goreleaser build --snapshot
+      run: bash -c "wget https://github.com/goreleaser/goreleaser/releases/download/v0.138.0/goreleaser_amd64.deb && dpkg -i goreleaser_amd64.deb && goreleaser build --snapshot"
   publish:
     runs-on: ubuntu-latest
     needs: test
