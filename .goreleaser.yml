@@ -1,0 +1,21 @@
+before:
+  hooks:
+    - bash -c "cd frontend && yarn && yarn run webpack --mode production"
+builds:
+- env:
+  - CGO_ENABLED=1
+  main: cmd/webmentiond
+archives:
+  - wrap_in_directory: true
+    files:
+      - frontend/*
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
