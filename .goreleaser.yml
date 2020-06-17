@@ -7,7 +7,7 @@ builds:
     - CGO_ENABLED=1
     main: ./cmd/webmentiond
     goos:
-      - linux
+      - darwin
     goarch:
       - amd64
 archives:
@@ -21,10 +21,15 @@ archives:
       - frontend/index.html
       - frontend/demo.html
       - pkg/server/migrations/**/*
+blobs:
+  - provider: s3
+    endpoint: https://ams3.digitaloceanspaces.com
+    bucket: zerokspot-media
+    folder: releases/webmentiond/{{ .Version }}
 checksum:
   name_template: 'checksums.txt'
 snapshot:
-  name_template: "{{ .Tag }}-next"
+  name_template: "{{ .Commit }}"
 changelog:
   sort: asc
   filters:
