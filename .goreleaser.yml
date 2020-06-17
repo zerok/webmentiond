@@ -7,7 +7,7 @@ builds:
     - CGO_ENABLED=1
     main: ./cmd/webmentiond
     goos:
-      - darwin
+      - linux
     goarch:
       - amd64
 archives:
