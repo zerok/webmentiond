@@ -58,6 +58,7 @@ type Configuration struct {
 	PublicURL                   string
 	UIPath                      string
 	VerificationTimeoutDuration time.Duration
+	NotifyOnVerification        bool
 }
 
 type Configurator func(c *Configuration)

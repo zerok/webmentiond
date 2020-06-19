@@ -20,6 +20,7 @@ import (
 func newServeCmd() Command {
 	var tokenTTL time.Duration
 	var verificationTimeoutDur time.Duration
+	var notify bool
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
 		Short: "Start HTTP server for sending and receiving mentions",
@@ -94,6 +95,7 @@ func newServeCmd() Command {
 				c.AllowedOrigins = allowedOrigins
 				c.PublicURL, _ = cmd.Flags().GetString("public-url")
 				c.UIPath = uiPath
+				c.NotifyOnVerification = notify
 			})
 			if err := srv.MigrateDatabase(ctx); err != nil {
 				return err
@@ -122,6 +124,8 @@ func newServeCmd() Command {
 	serveCmd.Flags().DurationVar(&tokenTTL, "auth-jwt-ttl", time.Hour*24*7, "TTL of the generated JWTs")
 	serveCmd.Flags().StringSlice("auth-admin-emails", []string{}, "All e-mail addresses that can gain admin-access")
 	serveCmd.Flags().DurationVar(&verificationTimeoutDur, "verification-timeout", time.Second*30, "Wait at least this time before re-verifying a source")
+
+	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
 
 	return newBaseCommand(serveCmd)
 }

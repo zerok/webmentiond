@@ -55,6 +55,11 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		}
 		logger.Debug().Msgf("%s -> %s checked: %v", m.Source, m.Target, newStatus)
 		srv.UpdateGlobalMetrics(ctx)
+		if srv.cfg.NotifyOnVerification {
+			if err := srv.sendNotificationMail(ctx, mention, newStatus); err != nil {
+				logger.Error().Err(err).Msg("Failed to send notification email")
+			}
+		}
 		return true, nil
 	}
 }
