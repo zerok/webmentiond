@@ -9,13 +9,46 @@ import (
 	"net/smtp"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/spf13/cobra"
 	"github.com/zerok/webmentiond/pkg/mailer"
+	"github.com/zerok/webmentiond/pkg/policies"
 	"github.com/zerok/webmentiond/pkg/server"
 )
+
+type dbPolicyLoader struct {
+	db *sql.DB
+}
+
+func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error) {
+	result, err := l.db.QueryContext(ctx, "SELECT url_pattern, policy, weight FROM url_policies ORDER BY weight ASC")
+	if err != nil {
+		return nil, err
+	}
+	defer result.Close()
+	pols := make([]policies.URLPolicy, 0, 10)
+	for result.Next() {
+		var pat string
+		var pol string
+		var weight int
+		if err := result.Scan(&pat, &pol, &weight); err != nil {
+			return nil, err
+		}
+		urlp, err := regexp.Compile(pat)
+		if err != nil {
+			return nil, err
+		}
+		pols = append(pols, policies.URLPolicy{
+			URLPattern: urlp,
+			Policy:     policies.Policy(pol),
+			Weight:     weight,
+		})
+	}
+	return pols, nil
+}
 
 func newServeCmd() Command {
 	var tokenTTL time.Duration
@@ -81,6 +114,8 @@ func newServeCmd() Command {
 			if err != nil {
 				return fmt.Errorf("failed to open %s: %w", dbpath, err)
 			}
+			pol := policies.NewRegistry(policies.DEFAULT)
+			policyLoader := &dbPolicyLoader{db: db}
 			defer db.Close()
 			srv := server.New(func(c *server.Configuration) {
 				c.Auth.JWTSecret = authJWTSecret
@@ -96,10 +131,29 @@ func newServeCmd() Command {
 				c.PublicURL, _ = cmd.Flags().GetString("public-url")
 				c.UIPath = uiPath
 				c.NotifyOnVerification = notify
+				c.Policies = pol
 			})
 			if err := srv.MigrateDatabase(ctx); err != nil {
 				return err
 			}
+			if err := pol.Load(ctx, policyLoader); err != nil {
+				return err
+			}
+			go func() {
+				ticker := time.NewTicker(time.Second * 20)
+				defer ticker.Stop()
+				for {
+					select {
+					case <-ctx.Done():
+						return
+					case <-ticker.C:
+						break
+					}
+					if err := pol.Load(ctx, policyLoader); err != nil {
+						logger.Error().Err(err).Msg("Failed to load policies")
+					}
+				}
+			}()
 			httpSrv := http.Server{}
 			httpSrv.Addr = addr
 			httpSrv.Handler = srv

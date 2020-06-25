@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/zerok/webmentiond/pkg/policies"
 	"github.com/zerok/webmentiond/pkg/webmention"
 )
 
@@ -40,6 +41,15 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 	}
 	if err := webmention.Verify(ctx, &mention); err != nil {
 		newStatus = MentionStatusInvalid
+	}
+	if srv.cfg.Policies != nil {
+		if newStatus == MentionStatusVerified {
+			// Check if we can skip the manual approval process for this URL:
+			if srv.cfg.Policies.DetermineForURL(mention.Source) == policies.APPROVE {
+				logger.Info().Msgf("%s -> %s auto-approved", mention.Source, mention.Target)
+				newStatus = MentionStatusApproved
+			}
+		}
 	}
 	if len(mention.Content) > 500 {
 		mention.Content = mention.Content[0:497] + "…"

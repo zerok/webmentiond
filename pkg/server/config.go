@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/zerok/webmentiond/pkg/mailer"
+	"github.com/zerok/webmentiond/pkg/policies"
 )
 
 type RequestPolicy func(*http.Request) bool
@@ -59,6 +60,7 @@ type Configuration struct {
 	UIPath                      string
 	VerificationTimeoutDuration time.Duration
 	NotifyOnVerification        bool
+	Policies                    *policies.Registry
 }
 
 type Configurator func(c *Configuration)
