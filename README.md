@@ -58,3 +58,7 @@ flow, please take a look at the "Authentication flow" section below.
 4. Use this link to authenticate and receive a JWT that is then used by the
    server.
 
+## Further documentation
+
+- [Policies](./docs/policies.md)
+
