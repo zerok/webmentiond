@@ -12,6 +12,7 @@ import (
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 	"github.com/zerok/webmentiond/pkg/mailer"
+	"github.com/zerok/webmentiond/pkg/policies"
 	"github.com/zerok/webmentiond/pkg/server"
 )
 
@@ -63,6 +64,7 @@ func TestVerifyNotification(t *testing.T) {
 	require.NotNil(t, db)
 	defer db.Close()
 	dummymailer := mailer.NewDummy()
+	pols := policies.NewRegistry(policies.APPROVE)
 	srv := server.New(func(c *server.Configuration) {
 		c.Database = db
 		c.MigrationsFolder = "./migrations"
@@ -71,6 +73,7 @@ func TestVerifyNotification(t *testing.T) {
 		c.MailFrom = "sender@test.com"
 		c.Auth.AdminEmails = []string{"test@test.com"}
 		c.PublicURL = "http://yoursite.com"
+		c.Policies = pols
 	})
 	require.NoError(t, srv.MigrateDatabase(ctx))
 	// Now let's also launch a simple HTTP server that should act as source for
@@ -83,13 +86,13 @@ func TestVerifyNotification(t *testing.T) {
 	createMention(t, db, "a", h.URL, "http://test.com")
 	_, err = srv.VerifyNextMention(ctx)
 	require.NoError(t, err)
-	requireMentionStatus(t, db, "a", "verified")
+	requireMentionStatus(t, db, "a", "approved")
 	require.Len(t, dummymailer.Messages, 1)
 	m := dummymailer.Messages[0]
 	require.Equal(t, "sender@test.com", m.From)
 	require.Equal(t, []string{"test@test.com"}, m.To)
 	require.Equal(t, "Mention verified", m.Subject)
-	require.Equal(t, fmt.Sprintf("Source: <%s>\nTarget: <http://test.com>\n\nGo to <http://yoursite.com/ui/> for details.", h.URL), m.Body)
+	require.Equal(t, fmt.Sprintf("Source: <%s>\nTarget: <http://test.com>\nNew status: approved\n\nGo to <http://yoursite.com/ui/> for details.", h.URL), m.Body)
 }
 
 func requireMentionCount(t *testing.T, db *sql.DB, expected int) {
