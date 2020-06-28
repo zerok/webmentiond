@@ -37,6 +37,7 @@ a {
 .button {
     padding: 5px;
     border: 1px solid #CCC;
+    font-size: 16px;
 }
 
 .button--primary,
@@ -219,4 +220,69 @@ a {
 .sendreport__item__error,
 .sendreport__item__endpoint {
   font-size: 70%;
+}
+
+.form-field {
+    display: grid;
+    grid-template-areas: "label input";
+    grid-template-columns: 100px auto;
+    margin-bottom: 10px;
+}
+
+.form-field__label {
+    grid-area: label;
+}
+
+.form-field__control {
+    grid-area: input;
+}
+
+.policy-listing {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 10px 0;
+}
+
+.policy {
+    border-bottom: 1px solid #CCC;
+    display: grid;
+    grid-template-areas: "pattern pattern pattern"
+                         "policy weight action";
+    grid-template-columns: auto auto 100px;
+    padding: 5px 0;
+    line-height: 30px;
+}
+
+.policy span {
+    display: block;
+    padding: 5px;
+}
+
+.policy svg {
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.policy__pattern {
+    grid-area: pattern;
+    background: #EFEFEF;
+}
+
+.policy button {
+    grid-area: action;
+}
+
+.policy__policy {
+    grid-area: policy;
+}
+
+.policy__weight {
+    grid-area: weight;
+}
+
+.error {
+    background: var(--red);
+    color: #FFF;
+    padding: 5px;
+    margin-bottom: 5px;
 }

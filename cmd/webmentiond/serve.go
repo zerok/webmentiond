@@ -24,17 +24,18 @@ type dbPolicyLoader struct {
 }
 
 func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error) {
-	result, err := l.db.QueryContext(ctx, "SELECT url_pattern, policy, weight FROM url_policies ORDER BY weight ASC")
+	result, err := l.db.QueryContext(ctx, "SELECT id, url_pattern, policy, weight FROM url_policies ORDER BY weight ASC")
 	if err != nil {
 		return nil, err
 	}
 	defer result.Close()
 	pols := make([]policies.URLPolicy, 0, 10)
 	for result.Next() {
+		var id int
 		var pat string
 		var pol string
 		var weight int
-		if err := result.Scan(&pat, &pol, &weight); err != nil {
+		if err := result.Scan(&id, &pat, &pol, &weight); err != nil {
 			return nil, err
 		}
 		urlp, err := regexp.Compile(pat)
@@ -42,6 +43,7 @@ func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error)
 			return nil, err
 		}
 		pols = append(pols, policies.URLPolicy{
+			ID:         id,
 			URLPattern: urlp,
 			Policy:     policies.Policy(pol),
 			Weight:     weight,
@@ -132,6 +134,7 @@ func newServeCmd() Command {
 				c.UIPath = uiPath
 				c.NotifyOnVerification = notify
 				c.Policies = pol
+				c.PolicyLoader = policyLoader
 			})
 			if err := srv.MigrateDatabase(ctx); err != nil {
 				return err

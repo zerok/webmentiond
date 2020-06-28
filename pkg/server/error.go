@@ -13,6 +13,7 @@ import (
 type HTTPError struct {
 	StatusCode int
 	Err        error
+	Message    string
 }
 
 func (e *HTTPError) Unwrap() error {
@@ -29,8 +30,12 @@ func (e *HTTPError) Error() string {
 func (srv *Server) sendError(ctx context.Context, w http.ResponseWriter, err error) {
 	logger := zerolog.Ctx(ctx)
 	statusCode := http.StatusInternalServerError
+	message := "Error"
 	var httpErr *HTTPError
 	if ok := errors.As(err, &httpErr); ok {
+		if httpErr.Message != "" {
+			message = httpErr.Message
+		}
 		statusCode = httpErr.StatusCode
 	}
 	if statusCode >= 500 {
@@ -38,5 +43,5 @@ func (srv *Server) sendError(ctx context.Context, w http.ResponseWriter, err err
 	} else {
 		logger.Debug().Err(err).Msg("Processing failed")
 	}
-	http.Error(w, "Error", statusCode)
+	http.Error(w, message, statusCode)
 }

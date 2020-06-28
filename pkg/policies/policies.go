@@ -32,6 +32,7 @@ const APPROVE = Policy("approve")
 const DEFAULT = Policy("default")
 
 type URLPolicy struct {
+	ID         int
 	URLPattern *regexp.Regexp
 	Policy     Policy
 	Weight     int
@@ -48,6 +49,11 @@ func NewRegistry(defaultPolicy Policy) *Registry {
 		defaultPolicy: defaultPolicy,
 		policies:      make([]URLPolicy, 0, 10),
 	}
+}
+
+func (r *Registry) Policies() []URLPolicy {
+	res := append(make([]URLPolicy, 0, len(r.policies)), r.policies...)
+	return res
 }
 
 type byWeight []URLPolicy

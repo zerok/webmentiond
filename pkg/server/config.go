@@ -61,6 +61,7 @@ type Configuration struct {
 	VerificationTimeoutDuration time.Duration
 	NotifyOnVerification        bool
 	Policies                    *policies.Registry
+	PolicyLoader                policies.Loader
 }
 
 type Configurator func(c *Configuration)

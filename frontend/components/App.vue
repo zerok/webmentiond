@@ -5,6 +5,7 @@
         <div class="topnav__left">
           <a href="#/">Mentions</a>
           <a href="#/send">Send</a>
+          <a href="#/policies">Policies</a>
         </div>
         <div class="topnav__right">
           <a href="#" v-on:click="logout">Log out <i class="fa fa-sign-out"></i></a>

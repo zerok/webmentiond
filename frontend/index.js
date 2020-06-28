@@ -3,11 +3,11 @@ import App from './components/App.vue';
 import Index from './components/Index.vue';
 import Login from './components/Login.vue';
 import Send from './components/Send.vue';
+import Policies from './components/Policies.vue';
 import Authenticate from './components/Authenticate.vue';
 import Vuex from 'vuex';
 import Router from 'vue-router';
 import Axios from 'axios';
-import Cookie from 'js-cookie';
 Vue.use(Vuex);
 Vue.use(Router);
 
@@ -33,6 +33,13 @@ const store = new Vuex.Store({
     sendStatusReport: null,
     updateMentionStatusStatus: null,
     mentionFilterStatus: 'verified',
+    policiesLoading: null,
+    policiesError: null,
+    policies: null,
+    deletePolicyLoading: false,
+    deletePolicyError: null,
+    createPolicyLoading: false,
+    createPolicyError: null
   },
   mutations: {
     logout(state) {
@@ -65,6 +72,39 @@ const store = new Vuex.Store({
     setMentionFilterStatus(state, status) {
       state.mentionFilterStatus = status;
     },
+    setPoliciesLoading(state, val) {
+      state.policiesLoading = val;
+    },
+    setPoliciesError(state, val) {
+      state.policiesError = val;
+    },
+    setPolicies(state, val) {
+      state.policies = val;
+    },
+    deletePolicyStarted(state) {
+      state.deletePolicyLoading = true;
+      state.deletePolicyError = null;
+    },
+    deletePolicySuccessful(state) {
+      state.deletePolicyLoading = false;
+      state.deletePolicyError = null;
+    },
+    deletePolicyFailed(state, e) {
+      state.deletePolicyLoading = false;
+      state.deletePolicyError = e;
+    },
+    createPolicyStarted(state) {
+      state.createPolicyLoading = true;
+      state.createPolicyError = null;
+    },
+    createPolicySuccessful(state) {
+      state.createPolicyLoading = false;
+      state.createPolicyError = null;
+    },
+    createPolicyFailed(state, e) {
+      state.createPolicyLoading = false;
+      state.createPolicyError = e;
+    }
   },
   actions: {
     async authenticate(context, token) {
@@ -158,6 +198,40 @@ const store = new Vuex.Store({
       localStorage.removeItem('session');
       context.commit('logout');
     },
+    async getPolicies(context) {
+      context.commit('setPoliciesLoading', true);
+      context.commit('setPoliciesError', null);
+      try {
+        const resp = await transport.get(`${API_BASE_URL}/manage/policies`);
+        context.commit('setPolicies', resp.data);
+        context.commit('setPoliciesLoading', false);
+      } catch(e) {
+        context.commit('setPoliciesError', e);
+        context.commit('setPoliciesLoading', false);
+      }
+    },
+    async deletePolicy(context, id) {
+      context.commit('deletePolicyStarted');
+      try {
+        await transport.delete(`${API_BASE_URL}/manage/policies/${id}`);
+        context.commit('deletePolicySuccessful');
+      } catch(e) {
+        context.commit('deletePolicyFailed', e);
+      }
+    },
+    async createPolicy(context, {urlPattern, weight, policy}) {
+      context.commit('createPolicyStarted');
+      try {
+        await transport.post(`${API_BASE_URL}/manage/policies`, {
+          url_pattern: urlPattern,
+          weight,
+          policy
+        });
+        context.commit('createPolicySuccessful');
+      } catch(e) {
+        context.commit('createPolicyFailed', e);
+      }
+    }
   }
 });
 
@@ -196,6 +270,20 @@ const router = new Router({
       component: Index,
       meta: {
         title: 'Mentions'
+      },
+      beforeEnter: (to, from, next) => {
+        if(!store.state.loggedIn) {
+          next('/login');
+          return;
+        }
+        next();
+      }
+    },
+    {
+      path: '/policies',
+      component: Policies,
+      meta: {
+        title: 'Policies'
       },
       beforeEnter: (to, from, next) => {
         if(!store.state.loggedIn) {

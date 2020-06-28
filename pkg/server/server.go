@@ -71,6 +71,9 @@ func New(configurators ...Configurator) *Server {
 		r.Post("/mentions/{id}/approve", srv.handleApproveMention)
 		r.Post("/mentions/{id}/reject", srv.handleRejectMention)
 		r.Post("/send", srv.handleSend)
+		r.Get("/policies", srv.handleListPolicies)
+		r.Delete("/policies/{id}", srv.handleDeletePolicy)
+		r.Post("/policies", srv.handleCreatePolicy)
 	})
 	srv.router.Get("/get", srv.handleGet)
 	return srv
@@ -130,6 +133,11 @@ func (srv *Server) MigrateDatabase(ctx context.Context) error {
 
 func (srv *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	srv.router.ServeHTTP(w, r)
+}
+
+func (srv *Server) reloadPolicies(ctx context.Context) error {
+	logger := zerolog.Ctx(ctx)
+	return srv.cfg.Policies.Load(logger.WithContext(context.Background()), srv.cfg.PolicyLoader)
 }
 
 type Mention struct {
