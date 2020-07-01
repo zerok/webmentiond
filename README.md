@@ -9,6 +9,8 @@ This repository contains the source code for the Webmention backend used at
 A public Docker image built automatically from the master branch of this
 repository is available on <https://hub.docker.com/r/zerok/webmentiond>.
 
+**Need help?** Please ask on [r/webmentiond](https://www.reddit.com/r/webmentiond/) or in our [GitHub issues](https://github.com/zerok/webmentiond/issues).
+
 ## How to get started
 
 1. You need to have an SMTP server through which the server can send you
