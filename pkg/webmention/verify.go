@@ -67,6 +67,8 @@ func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.
 	tokenizer := html.NewTokenizer(&tokenBuffer)
 	mf := microformats.Parse(&mfBuffer, sourceURL)
 	inTitle := false
+	inAudio := false
+	inVideo := false
 	title := ""
 	u, err := url.Parse(mention.Source)
 	if err == nil {
@@ -86,6 +88,10 @@ loop:
 			switch string(tagName) {
 			case "title":
 				inTitle = false
+			case "audio":
+				inAudio = false
+			case "video":
+				inVideo = false
 			}
 		case html.ErrorToken:
 			err := tokenizer.Err()
@@ -100,6 +106,44 @@ loop:
 			switch string(tagName) {
 			case "title":
 				inTitle = true
+			case "audio":
+				inAudio = true
+			case "video":
+				inVideo = true
+			case "source":
+				if inVideo || inAudio {
+					src := getAttr(tokenizer, "src")
+					if src == mention.Target {
+						mention.Title = title
+						contentOK = true
+						continue
+					}
+					link, err := shorteners.Resolve(ctx, src)
+					if err != nil {
+						continue
+					}
+					if link == mention.Target {
+						mention.Title = title
+						contentOK = true
+						continue
+					}
+				}
+			case "img":
+				src := getAttr(tokenizer, "src")
+				if src == mention.Target {
+					mention.Title = title
+					contentOK = true
+					continue
+				}
+				link, err := shorteners.Resolve(ctx, src)
+				if err != nil {
+					continue
+				}
+				if link == mention.Target {
+					mention.Title = title
+					contentOK = true
+					continue
+				}
 			case "a":
 				href := getAttr(tokenizer, "href")
 				if href == mention.Target {

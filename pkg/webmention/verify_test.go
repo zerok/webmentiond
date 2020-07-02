@@ -20,6 +20,16 @@ func TestVerify(t *testing.T) {
 		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></body></html>"), &mention)
 		require.NoError(t, err)
 	})
+	t.Run("link only in text", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body>https://something-else.com https://target.com</body></html>"), &mention)
+		require.Error(t, err)
+	})
 	t.Run("t.co link", func(t *testing.T) {
 		ctx := context.Background()
 		v := webmention.NewVerifier()
