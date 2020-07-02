@@ -56,5 +56,5 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 	}
 	srv.UpdateGlobalMetrics(ctx)
-	w.WriteHeader(201)
+	w.WriteHeader(202)
 }
