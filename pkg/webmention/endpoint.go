@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 	"net/http"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -109,7 +110,12 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 	}
 	if strings.HasPrefix(endpointCandidate, "/") {
 		baseURL := *req.URL
-		baseURL.Path = endpointCandidate
+		path, err := url.Parse(endpointCandidate)
+		if err != nil {
+			return "", err
+		}
+		baseURL.Path = path.Path
+		baseURL.RawQuery = path.RawQuery
 		return baseURL.String(), nil
 	}
 	return endpointCandidate, nil
