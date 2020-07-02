@@ -63,6 +63,12 @@ func (e *conformanceEnvironment) SendMention(source string, target string) *http
 	return w
 }
 
+func (e *conformanceEnvironment) VerifyNextMention(t *testing.T) {
+	verified, err := e.Srv.VerifyNextMention(e.Ctx)
+	require.NoError(t, err)
+	require.True(t, verified)
+}
+
 func TestConformance(t *testing.T) {
 	t.Run("request-verification/url-validation", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
@@ -70,6 +76,7 @@ func TestConformance(t *testing.T) {
 		w := e.SendMention("<>", "https://allowed.com")
 		require.Equal(t, http.StatusBadRequest, w.Code)
 	})
+
 	t.Run("request-verification/allowed-target", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -79,6 +86,7 @@ func TestConformance(t *testing.T) {
 		w = e.SendMention("https://source.com", "https://not-allowed.com")
 		require.Equal(t, http.StatusBadRequest, w.Code)
 	})
+
 	t.Run("request-verification/allowed-target-ignore-fragment", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -106,12 +114,9 @@ func TestConformance(t *testing.T) {
 			http.Redirect(w, r, "/actual", http.StatusTemporaryRedirect)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/redirect", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/redirect", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "verified")
 	})
 
@@ -132,12 +137,9 @@ func TestConformance(t *testing.T) {
 			http.Redirect(w, r, "/actual", http.StatusTemporaryRedirect)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/redirect-2", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/redirect-2", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusInvalid)
 	})
 
@@ -149,14 +151,12 @@ func TestConformance(t *testing.T) {
 			fmt.Fprintf(w, `<html><body>https://allowed.com/</body></html>`)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusInvalid)
 	})
+
 	t.Run("html-verification/link-in-video", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -165,14 +165,12 @@ func TestConformance(t *testing.T) {
 			fmt.Fprintf(w, `<html><body><video><source src="https://allowed.com/"></video></body></html>`)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusVerified)
 	})
+
 	t.Run("html-verification/link-in-audio", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -181,12 +179,9 @@ func TestConformance(t *testing.T) {
 			fmt.Fprintf(w, `<html><body><audio><source src="https://allowed.com/"></audio></body></html>`)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusVerified)
 	})
 
@@ -198,14 +193,12 @@ func TestConformance(t *testing.T) {
 			fmt.Fprintf(w, `<html><body><!-- <a href="https://allowed.com/">Target</a> --></body></html>`)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusInvalid)
 	})
+
 	t.Run("html-verification/link-in-img", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -214,12 +207,9 @@ func TestConformance(t *testing.T) {
 			fmt.Fprintf(w, `<html><body><img src="https://allowed.com/"></body></html>`)
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusVerified)
 	})
 
@@ -236,23 +226,18 @@ func TestConformance(t *testing.T) {
 			}
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusVerified)
 
 		isPresent = false
-		w = e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err = e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusInvalid)
 	})
+
 	t.Run("update-tests/recognize-410", func(t *testing.T) {
 		e := createConformanceEnvironment(t)
 		defer e.Destroy()
@@ -266,21 +251,15 @@ func TestConformance(t *testing.T) {
 			}
 		})
 		src := httptest.NewServer(mux)
-		w := e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err := e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusVerified)
 
 		isPresent = false
-		w = e.SendMention(src.URL+"/actual", "https://allowed.com/")
-		require.Equal(t, http.StatusAccepted, w.Code)
+		e.SendMention(src.URL+"/actual", "https://allowed.com/")
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", "new")
-		verified, err = e.Srv.VerifyNextMention(e.Ctx)
-		require.NoError(t, err)
-		require.True(t, verified)
+		e.VerifyNextMention(t)
 		requireMentionWithStatus(t, e.Ctx, e.DB, "https://allowed.com/", server.MentionStatusInvalid)
 	})
 }
