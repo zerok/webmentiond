@@ -44,7 +44,7 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 				tx.Rollback()
 				srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 			}
-			w.WriteHeader(201)
+			w.WriteHeader(http.StatusAccepted)
 			return
 		}
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
