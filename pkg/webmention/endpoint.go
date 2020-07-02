@@ -44,12 +44,14 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 		return "", err
 	}
 	var endpointCandidate string
+	var candidateFound bool
 	logger.Debug().Msg("Checking for endpoint in header")
 	linkHeader := resp.Header.Get("Link")
 	if matches := linkHeaderRe.FindStringSubmatch(linkHeader); len(matches) > 1 {
 		endpointCandidate = matches[1]
+		candidateFound = true
 	}
-	if endpointCandidate == "" {
+	if !candidateFound {
 		logger.Debug().Msg("Checking for endpoint in content")
 		tokenizer := html.NewTokenizer(resp.Body)
 	tokenloop:
@@ -89,12 +91,16 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 					}
 					if isCorrectRel(rel) {
 						endpointCandidate = href
+						candidateFound = true
 						break tokenloop
 					}
 				}
 			}
 		}
 		defer resp.Body.Close()
+	}
+	if endpointCandidate == "" && candidateFound {
+		endpointCandidate = u
 	}
 	if strings.HasPrefix(endpointCandidate, "/") {
 		baseURL := *req.URL
