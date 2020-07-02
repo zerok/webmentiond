@@ -126,6 +126,21 @@ func TestDiscoverEndpoint(t *testing.T) {
 		require.Equal(t, srv.URL, discovered)
 	})
 
+	t.Run("skip <link/> with no href", func(t *testing.T) {
+		ctx := context.Background()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			w.WriteHeader(200)
+			fmt.Fprintf(w, "<html><head><link rel=\"webmention\" /></head><body><a rel=\"webmention\" href=\"/endpoint/\">target</a></body></html>")
+		}))
+		disc := webmention.NewEndpointDiscoverer(func(c *webmention.EndpointDiscoveryConfiguration) {
+			c.HTTPClient = srv.Client()
+		})
+		discovered, err := disc.DiscoverEndpoint(ctx, srv.URL)
+		require.NoError(t, err)
+		require.Equal(t, srv.URL+"/endpoint/", discovered)
+	})
+
 	t.Run("discover <a>", func(t *testing.T) {
 		ctx := context.Background()
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

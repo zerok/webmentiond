@@ -79,6 +79,7 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 				case "link":
 					var rel string
 					var href string
+					var hrefPresent bool
 					for {
 						rawattrkey, attrval, hasMore := tokenizer.TagAttr()
 						attrkey := string(rawattrkey)
@@ -86,13 +87,14 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 						case "rel":
 							rel = string(attrval)
 						case "href":
+							hrefPresent = true
 							href = string(attrval)
 						}
 						if !hasMore {
 							break
 						}
 					}
-					if isCorrectRel(rel) {
+					if hrefPresent && isCorrectRel(rel) {
 						endpointCandidate = href
 						candidateFound = true
 						break tokenloop
