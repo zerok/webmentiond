@@ -40,6 +40,7 @@ func buildCmd() Command {
 	verifyCmd := newVerifyCmd()
 	root.AddCommand("serve", serveCmd)
 	root.AddCommand("send", sendCmd)
-	root.AddCommand("veriify", verifyCmd)
+	root.AddCommand("verify", verifyCmd)
+	root.AddCommand("config", newConfigCmd())
 	return root
 }

@@ -108,3 +108,11 @@ You log into the administration UI using your e-mail address. In order for the
 system to know who should be able to log in, you have to specify their e-mail
 address here.
 
+
+## Using a configuration file
+
+If you prefer to store your configuration inside a single configuration, you
+can also do that. To get started, run `webmentiond config init` which will
+generate a `webmentiond.yaml` file inside your current working directory. In
+order for webmentiond to also load your settings from this file, pass
+`--config-file webmentiond.yaml` to any webmentiond command.
