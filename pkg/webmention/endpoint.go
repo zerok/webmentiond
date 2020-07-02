@@ -31,7 +31,7 @@ type simpleEndpointDiscoverer struct {
 	client *http.Client
 }
 
-var linkHeaderRe = regexp.MustCompile("<([^>]+)>;\\s*rel=\"webmention\"")
+var linkHeaderRe = regexp.MustCompile("<([^>]+)>;\\s*rel=\"?webmention\"?")
 
 func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u string) (string, error) {
 	logger := zerolog.Ctx(ctx)
