@@ -68,6 +68,21 @@ func TestDiscoverEndpoint(t *testing.T) {
 		require.Equal(t, srv.URL+"/endpoint/", discovered)
 	})
 
+	t.Run("discover <link/> with multiple rels", func(t *testing.T) {
+		ctx := context.Background()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "text/html")
+			w.WriteHeader(200)
+			fmt.Fprintf(w, "<html><head><link rel=\"webmention somethingelse\" href=\"/endpoint/\" /></head><body></body></html>")
+		}))
+		disc := webmention.NewEndpointDiscoverer(func(c *webmention.EndpointDiscoveryConfiguration) {
+			c.HTTPClient = srv.Client()
+		})
+		discovered, err := disc.DiscoverEndpoint(ctx, srv.URL)
+		require.NoError(t, err)
+		require.Equal(t, srv.URL+"/endpoint/", discovered)
+	})
+
 	t.Run("discover <link/> with absolute URL", func(t *testing.T) {
 		ctx := context.Background()
 		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

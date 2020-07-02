@@ -87,7 +87,7 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 							break
 						}
 					}
-					if rel == "webmention" {
+					if isCorrectRel(rel) {
 						endpointCandidate = href
 						break tokenloop
 					}
@@ -102,6 +102,16 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 		return baseURL.String(), nil
 	}
 	return endpointCandidate, nil
+}
+
+func isCorrectRel(rel string) bool {
+	rels := strings.Split(rel, " ")
+	for _, r := range rels {
+		if strings.TrimSpace(r) == "webmention" {
+			return true
+		}
+	}
+	return false
 }
 
 // NewEndpointDiscoverer creates a new EndpointDiscoverer configured
