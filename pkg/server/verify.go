@@ -39,7 +39,9 @@ func (srv *Server) VerifyNextMention(ctx context.Context) (bool, error) {
 		Source: m.Source,
 		Target: m.Target,
 	}
-	if err := webmention.Verify(ctx, &mention); err != nil {
+	if err := webmention.Verify(ctx, &mention, func(c *webmention.VerifyOptions) {
+		c.MaxRedirects = srv.cfg.VerificationMaxRedirects
+	}); err != nil {
 		newStatus = MentionStatusInvalid
 	}
 	if srv.cfg.Policies != nil {

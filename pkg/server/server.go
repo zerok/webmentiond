@@ -31,7 +31,8 @@ type Server struct {
 
 func New(configurators ...Configurator) *Server {
 	cfg := Configuration{
-		Context: context.Background(),
+		Context:                  context.Background(),
+		VerificationMaxRedirects: -1,
 	}
 	for _, configurator := range configurators {
 		configurator(&cfg)

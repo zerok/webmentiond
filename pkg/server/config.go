@@ -59,6 +59,7 @@ type Configuration struct {
 	PublicURL                   string
 	UIPath                      string
 	VerificationTimeoutDuration time.Duration
+	VerificationMaxRedirects    int
 	NotifyOnVerification        bool
 	Policies                    *policies.Registry
 	PolicyLoader                policies.Loader

@@ -3,6 +3,7 @@ package webmention
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,9 +15,25 @@ import (
 	"willnorris.com/go/microformats"
 )
 
+type VerifyOptions struct {
+	MaxRedirects int
+}
+
 // Verify uses a basic HTTP client and a default Verifier.
-func Verify(ctx context.Context, mention *Mention) error {
+func Verify(ctx context.Context, mention *Mention, configurators ...func(c *VerifyOptions)) error {
+	cfg := &VerifyOptions{
+		MaxRedirects: 10,
+	}
+	for _, c := range configurators {
+		c(cfg)
+	}
 	client := &http.Client{}
+	client.CheckRedirect = func(r *http.Request, via []*http.Request) error {
+		if len(via) > cfg.MaxRedirects {
+			return errors.New("too many redirects")
+		}
+		return nil
+	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, mention.Source, nil)
 	if err != nil {
 		return err
