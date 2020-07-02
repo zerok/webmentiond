@@ -24,6 +24,19 @@ func TestDiscoverEndpoint(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, srv.URL+"/endpoint/", discovered)
 	})
+	t.Run("discover link header from multiple", func(t *testing.T) {
+		ctx := context.Background()
+		srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Link", "</wrong/>; rel=\"wrong\"")
+			w.Header().Add("Link", "</endpoint/>; rel=\"webmention\"")
+		}))
+		disc := webmention.NewEndpointDiscoverer(func(c *webmention.EndpointDiscoveryConfiguration) {
+			c.HTTPClient = srv.Client()
+		})
+		discovered, err := disc.DiscoverEndpoint(ctx, srv.URL)
+		require.NoError(t, err)
+		require.Equal(t, srv.URL+"/endpoint/", discovered)
+	})
 
 	t.Run("discover link header w/o quotes", func(t *testing.T) {
 		ctx := context.Background()

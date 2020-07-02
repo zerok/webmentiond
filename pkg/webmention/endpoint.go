@@ -46,10 +46,13 @@ func (ed *simpleEndpointDiscoverer) DiscoverEndpoint(ctx context.Context, u stri
 	var endpointCandidate string
 	var candidateFound bool
 	logger.Debug().Msg("Checking for endpoint in header")
-	linkHeader := resp.Header.Get("Link")
-	if matches := linkHeaderRe.FindStringSubmatch(linkHeader); len(matches) > 1 {
-		endpointCandidate = matches[1]
-		candidateFound = true
+	linkHeaders := resp.Header.Values("Link")
+	for _, linkHeader := range linkHeaders {
+		if matches := linkHeaderRe.FindStringSubmatch(linkHeader); len(matches) > 1 {
+			endpointCandidate = matches[1]
+			candidateFound = true
+			break
+		}
 	}
 	if !candidateFound {
 		logger.Debug().Msg("Checking for endpoint in content")
