@@ -1,4 +1,4 @@
-# Webmention server
+# webmentiond: A simple webmention server
 
 This repository contains the source code for the Webmention backend used at
 <https://zerokspot.com>. It comes with the following features:
