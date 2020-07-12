@@ -1,5 +1,7 @@
 # webmentiond: A simple webmention server
 
+<p style="text-align:left"><a href="https://zerokspot.com/weblog/2020/07/12/what-code-i-put-online/" style="border:none"><img src="https://zerokspot.com/images/status-maintained.svg"></a></p>
+
 This repository contains the source code for the Webmention backend used at
 <https://zerokspot.com>. It comes with the following features:
 
