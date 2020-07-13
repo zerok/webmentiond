@@ -1,16 +1,19 @@
 :root {
+    --primary: #A11BD6;
     --red: #ac4141;
     --green: #8aa45c;
-    --blue: #2b91ef;
     --body: #333;
 }
 
 .message {
-    color: #FFF;
-    padding: 5px;
+    padding: 10px;
+    border: 1px solid #CCC;
+    border-left: 10px solid #CCC;
+
 }
+
 .message--success {
-    background: var(--green);
+    border-color: var(--green);
 }
 
 .message--error {
@@ -25,7 +28,7 @@ body {
 }
 
 a {
-    color: var(--blue);
+    color: var(--primary);
 }
 
 .input {
@@ -35,22 +38,26 @@ a {
 }
 
 .button {
-    padding: 5px;
+    display: inline-block;
     border: 1px solid #CCC;
     font-size: 16px;
+    line-height: 30px;
+    font-weight: normal;
+    border-radius: 2px;
 }
 
-.button--primary,
-.button--positive {
-    background: var(--green);
+.button--primary {
+    background: var(--primary);
     color: #FFF;
-    border: 1px solid var(--green);
+    border: 1px solid var(--primary);
 }
 
-.button--negative {
-    background: var(--red);
-    border: 1px solid var(--red);
-    color: #FFF;
+.button--positive svg {
+    color: var(--green);
+}
+
+.button--negative svg {
+    color: var(--red);
 }
 
 .mention-list {
@@ -102,7 +109,7 @@ a {
 
 .mention-filters__status a.active {
     font-weight: bold;
-    color: var(--blue);
+    color: var(--primary);
     background: #FFF;
     border: 1px solid #AAA;
     border-bottom: 1px solid #FFF;
@@ -191,9 +198,15 @@ a {
 }
 
 .title {
-    padding: 10px 10px;
+    padding: 0 10px;
+    line-height: 55px;
     background: #EFEFEF;
-    color: var(--blue);
+    color: var(--primary);
+}
+
+.title img {
+    height: 36px;
+    vertical-align: middle;
 }
 
 .sendreport {

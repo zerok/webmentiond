@@ -1,6 +1,6 @@
 <template>
   <form v-on:submit="onSubmit" class="auth">
-    <h1 class="title">Authenticate account</h1>
+    <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" /> Authenticate account</h1>
     <div class="main">
     <label>Token: <input v-model="token"></label>
     <div class="form__actions">

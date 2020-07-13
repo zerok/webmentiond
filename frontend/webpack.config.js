@@ -12,6 +12,13 @@ module.exports = {
       {
         test: /\.vue$/,
         loader: 'vue-loader'
+      }, {
+        test: /\.svg$/,
+        loader: 'file-loader',
+        options: {
+          esModule: false,
+          publicPath: 'dist'
+        }
       }
     ]
   },

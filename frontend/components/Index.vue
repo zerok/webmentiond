@@ -1,6 +1,6 @@
 <template>
   <div>
-  <h1 class="title">Mentions</h1>
+  <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" /> Mentions</h1>
   <div class="main">
   <mention-filters v-on:change="onFilterUpdate" />
   <Loading v-if="updateMentionStatusStatus == 'pending'" />

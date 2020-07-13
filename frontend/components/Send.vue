@@ -1,6 +1,6 @@
 <template>
   <div>
-  <h1 class="title">Send mention</h1>
+  <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" /> Send mention</h1>
   <div class="main">
     <form @submit.prevent>
       <input class="input--url input" type="text" v-model="source">

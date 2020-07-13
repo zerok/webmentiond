@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1 class="title"><i class="fa fa-redo"></i> Policies</h1>
+    <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" />  Policies</h1>
     <div class="main">
       <Loading v-if="createPolicyLoading || policiesLoading || deletePolicyLoading" />
       <Error v-if="policiesError" err="Failed to load policies" />

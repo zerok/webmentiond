@@ -1,6 +1,6 @@
 <template>
   <form v-on:submit="onSubmit" class="login">
-    <h1 class="title">Log in</h1>
+    <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" /> Log in</h1>
     <div class="main">
     <Loading v-if="requestTokenStatus == 'pending'"/>
     <p class="message message--success" v-if="requestTokenStatus == 'succeeded'">
