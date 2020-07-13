@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -63,11 +64,11 @@ func New(configurators ...Configurator) *Server {
 	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
 	})
-	srv.router.Handle("/metrics", promhttp.Handler())
-	srv.router.Post("/receive", srv.handleReceive)
-	srv.router.Post("/request-login", srv.handleLogin)
-	srv.router.Post("/authenticate", srv.handleAuthenticate)
-	srv.router.With(srv.requireAuthMiddleware).Route("/manage", func(r chi.Router) {
+	srv.router.With(middleware.NoCache).Handle("/metrics", promhttp.Handler())
+	srv.router.With(middleware.NoCache).Post("/receive", srv.handleReceive)
+	srv.router.With(middleware.NoCache).Post("/request-login", srv.handleLogin)
+	srv.router.With(middleware.NoCache).Post("/authenticate", srv.handleAuthenticate)
+	srv.router.With(middleware.NoCache, srv.requireAuthMiddleware).Route("/manage", func(r chi.Router) {
 		r.Get("/mentions", srv.handleListMentions)
 		r.Post("/mentions/{id}/approve", srv.handleApproveMention)
 		r.Post("/mentions/{id}/reject", srv.handleRejectMention)
@@ -76,7 +77,7 @@ func New(configurators ...Configurator) *Server {
 		r.Delete("/policies/{id}", srv.handleDeletePolicy)
 		r.Post("/policies", srv.handleCreatePolicy)
 	})
-	srv.router.Get("/get", srv.handleGet)
+	srv.router.With(middleware.NoCache).Get("/get", srv.handleGet)
 	return srv
 }
 
