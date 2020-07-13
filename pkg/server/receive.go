@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"time"
 
 	"github.com/mattn/go-sqlite3"
@@ -56,5 +57,11 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 	}
 	srv.UpdateGlobalMetrics(ctx)
-	w.WriteHeader(202)
+	if strings.Contains(r.Header.Get("Accept"), "text/html") {
+		// Redirect browser to target
+		w.Header().Add("Location", m.Target)
+		w.WriteHeader(http.StatusSeeOther)
+	} else {
+		w.WriteHeader(http.StatusAccepted)
+	}
 }
