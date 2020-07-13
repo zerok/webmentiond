@@ -11,8 +11,12 @@ import (
 	"github.com/zerok/webmentiond/pkg/policies"
 )
 
+// RequestPolicy functions allow you to mark incoming requests as allowed or
+// denied.
 type RequestPolicy func(*http.Request) bool
 
+// RequestPolicyAllowHost creates a policy that allows only requests targeted at
+// specific hosts.
 func RequestPolicyAllowHost(hosts ...string) RequestPolicy {
 	return func(r *http.Request) bool {
 		if r.URL == nil {

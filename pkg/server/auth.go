@@ -17,6 +17,7 @@ func isAuthorized(ctx context.Context) bool {
 	return ctx.Value(authorizedContextKey{}) == true
 }
 
+// AuthorizeContext marks the current context as being authorized.
 func AuthorizeContext(ctx context.Context) context.Context {
 	return context.WithValue(ctx, authorizedContextKey{}, true)
 }
