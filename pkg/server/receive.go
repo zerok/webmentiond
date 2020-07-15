@@ -56,5 +56,6 @@ func (srv *Server) handleReceive(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 	}
 	srv.UpdateGlobalMetrics(ctx)
-	w.WriteHeader(202)
+	w.WriteHeader(http.StatusAccepted)
+	_, _ = fmt.Fprint(w, "Webmention accepted")
 }
