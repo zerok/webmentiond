@@ -148,7 +148,7 @@ const store = new Vuex.Store({
       try {
         context.commit('updateGetMentionsStatus', 'succeeded');
         const resp = await transport.get(`${API_BASE_URL}/manage/mentions?status=${f.status}`);
-        context.commit('setMentions', resp.data.items.reverse());
+        context.commit('setMentions', resp.data.items);
       } catch (e) {
         console.log(e);
         if (e.response && e.response.status === 401) {
