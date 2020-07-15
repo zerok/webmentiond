@@ -2,7 +2,7 @@
 
 <p style="text-align:left"><a href="https://zerokspot.com/weblog/2020/07/12/what-code-i-put-online/" style="border:none"><img src="https://zerokspot.com/images/status-maintained.svg"></a></p>
 
-This repository contains the source code for the Webmention backend used at
+<img src="frontend/css/webmentiond-logo.svg" style="height:100px;float:left;margin:0 20px 10px 0" alt="">This repository contains the source code for the Webmention backend used at
 <https://zerokspot.com>. It comes with the following features:
 
 - A server for receiving mentions and storing them in a SQLite database
