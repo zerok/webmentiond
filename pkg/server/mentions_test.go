@@ -88,10 +88,12 @@ func TestPagingMentions(t *testing.T) {
 	defer db.Close()
 	srv := setupServer(t, db)
 	createMention(t, db, "a", "a", "b")
-	setMentionTitle(t, db, "a", "title")
-	setMentionContent(t, db, "a", "content")
+	setMentionTitle(t, db, "a", "titlea")
+	setMentionContent(t, db, "a", "contenta")
 	createMention(t, db, "b", "b", "c")
 	createMention(t, db, "c", "c", "d")
+	setMentionTitle(t, db, "c", "titlec")
+	setMentionContent(t, db, "c", "contentc")
 
 	// If we just send an authorized request, we should get a 401 back:
 	w := httptest.NewRecorder()
@@ -108,9 +110,9 @@ func TestPagingMentions(t *testing.T) {
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
 	require.Equal(t, 3, res.Total)
 	require.Len(t, res.Items, 1)
-	require.Equal(t, "a", res.Items[0].ID)
-	require.Equal(t, "title", res.Items[0].Title)
-	require.Equal(t, "content", res.Items[0].Content)
+	require.Equal(t, "c", res.Items[0].ID)
+	require.Equal(t, "titlec", res.Items[0].Title)
+	require.Equal(t, "contentc", res.Items[0].Content)
 
 	// Now, let's page through all the result-sets:
 	require.NotEmpty(t, res.Next)
@@ -131,7 +133,7 @@ func TestPagingMentions(t *testing.T) {
 	require.Equal(t, http.StatusOK, w.Code)
 	require.NoError(t, json.NewDecoder(w.Body).Decode(&res))
 	require.Len(t, res.Items, 1)
-	require.Equal(t, "c", res.Items[0].ID)
+	require.Equal(t, "a", res.Items[0].ID)
 	require.Empty(t, res.Next)
 
 	// For now, we don't have any verified mentions yet:
