@@ -66,4 +66,5 @@ flow, please take a look at the "Authentication flow" section below.
 
 - [Policies](./docs/policies.md)
 - [Configuration](./docs/configuration.md)
+- [How to use FontAwesome Pro icons](./docs/fontawesome.md)
 
