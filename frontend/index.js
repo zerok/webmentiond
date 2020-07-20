@@ -24,8 +24,11 @@ if (localStorage.getItem('session')) {
 
 const store = new Vuex.Store({
   state: {
+    mentionPagingRequestLimit: 50,
+    mentionPagingRequestOffset: 0,
     loggedIn: !!localStorage.getItem('session'),
     authStatus: null,
+    pagingInfo: {},
     mentions: null,
     requestTokenStatus: null,
     getMentionsStatus: null,
@@ -42,6 +45,15 @@ const store = new Vuex.Store({
     createPolicyError: null
   },
   mutations: {
+    setMentionPagingRequestOffset(state, offset) {
+      state.mentionPagingRequestOffset = offset;
+    },
+    setMentionPagingRequestLimit(state, size) {
+      state.mentionPagingRequestLimit = size;
+    },
+    setPagingInfo(state, info) {
+      state.pagingInfo = info;
+    },
     logout(state) {
       state.loggedIn = false;
     },
@@ -140,15 +152,16 @@ const store = new Vuex.Store({
         context.commit('sendStatus', 'failed');
       }
     },
-    async getMentions(context, filter) {
-      const f = Object.assign({
-        status: 'verified'
-      }, filter)
+    async getMentions(context) {
+      const {mentionFilterStatus, mentionPagingRequestOffset, mentionPagingRequestLimit} = context.state;
       context.commit('updateGetMentionsStatus', 'pending');
       try {
         context.commit('updateGetMentionsStatus', 'succeeded');
-        const resp = await transport.get(`${API_BASE_URL}/manage/mentions?status=${f.status}`);
+        const resp = await transport.get(`${API_BASE_URL}/manage/mentions?status=${mentionFilterStatus}&offset=${mentionPagingRequestOffset}&limit=${mentionPagingRequestLimit}`);
         context.commit('setMentions', resp.data.items);
+        context.commit('setPagingInfo', {
+          total: resp.data.total
+        });
       } catch (e) {
         console.log(e);
         if (e.response && e.response.status === 401) {
@@ -191,8 +204,12 @@ const store = new Vuex.Store({
         context.commit('updateMentionStatusStatus', 'failed');
       }
     },
-    setMentionFilterStatus(context, status) {
+    async setMentionFilterStatus(context, status) {
+      // When we change the filter, we should reset the paging
+      context.commit('setMentionPagingRequestOffset', 0);
+      context.commit('setMentions', null);
       context.commit('setMentionFilterStatus', status);
+      await context.dispatch('getMentions');
     },
     logout(context) {
       localStorage.removeItem('session');
@@ -231,6 +248,23 @@ const store = new Vuex.Store({
       } catch(e) {
         context.commit('createPolicyFailed', e);
       }
+    },
+    async goToNextPage(context) {
+      const {mentionPagingRequestLimit, mentionPagingRequestOffset} = context.state;
+      const nextOffset = mentionPagingRequestOffset + mentionPagingRequestLimit;
+      context.commit('setMentionPagingRequestOffset', nextOffset);
+      context.commit('setMentions', null);
+      context.dispatch('getMentions');
+    },
+    async goToPreviousPage(context) {
+      const {mentionPagingRequestLimit, mentionPagingRequestOffset} = context.state;
+      const nextOffset = mentionPagingRequestOffset - mentionPagingRequestLimit;
+      if (nextOffset < 0) {
+        return;
+      }
+      context.commit('setMentionPagingRequestOffset', nextOffset);
+      context.commit('setMentions', null);
+      context.dispatch('getMentions');
     }
   }
 });

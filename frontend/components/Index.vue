@@ -2,9 +2,11 @@
   <div>
   <h1 class="title"><img src="../css/webmentiond-logo.svg" alt="" /> Mentions</h1>
   <div class="main">
-  <mention-filters v-on:change="onFilterUpdate" />
+  <mention-filters />
   <Loading v-if="updateMentionStatusStatus == 'pending'" />
-  <ul v-if="mentions && mentions.length" class="mention-list">
+  <Loading v-if="getMentionsStatus == 'pending'" />
+  <div v-if="mentions && mentions.length">
+  <ul class="mention-list">
     <li v-for="mention in mentions" class="mention">
       <div class="mention__info">
         <span class="mention__title" v-if="mention.title">{{ mention.title }}</span>
@@ -22,7 +24,9 @@
       </div>
     </li>
   </ul>
-  <p class="empty" v-else>No mentions found.</p>
+  <Paging :pageSize="mentionPagingRequestSize" :total="pagingInfo.total" :currentPageSize="mentions.length" :offset="mentionPagingRequestOffset" :nextPage="nextPage" :previousPage="previousPage" />
+  </div>
+  <p class="empty" v-else-if="getMentionsStatus != 'pending'">No mentions found.</p>
   </div>
   </div>
 </template>
@@ -30,10 +34,12 @@
   import {mapState} from 'vuex';
   import MentionFilters from './MentionFilters.vue';
   import Loading from './Loading.vue';
+  import Paging from './Paging.vue';
 export default {
   components: {
     MentionFilters,
     Loading,
+    Paging
   },
   data() {
     return {
@@ -56,6 +62,12 @@ export default {
     }
   },
   methods: {
+    previousPage() {
+      this.$store.dispatch('goToPreviousPage');
+    },
+    nextPage() {
+      this.$store.dispatch('goToNextPage');
+    },
     onFilterUpdate(status) {
       this.$store.dispatch('getMentions', {
         'status': status
@@ -71,7 +83,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['mentions', 'updateMentionStatusStatus', 'mentionFilterStatus'])
+    ...mapState(['pagingInfo', 'mentionPagingRequestOffset', 'mentionPagingRequestSize', 'mentions', 'updateMentionStatusStatus', 'mentionFilterStatus', 'getMentionsStatus'])
   }
 };
 </script>

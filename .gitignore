@@ -7,3 +7,5 @@ node_modules
 /frontend/*.zip
 /frontend/yarn-error.log
 /dist
+/vendor
+/webmentiond.yaml
