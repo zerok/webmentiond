@@ -299,3 +299,26 @@ a {
     padding: 5px;
     margin-bottom: 5px;
 }
+
+.paging {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.paging__next {
+    text-align: right;
+}
+
+.paging__previous {
+    text-align: left;
+}
+
+.paging__next--disabled,
+.paging__previous--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.paging__status {
+    text-align: center;
+}
