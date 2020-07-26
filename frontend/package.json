@@ -4,10 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.7.7",
     "@babel/plugin-transform-runtime": "^7.7.6",
     "@babel/preset-env": "^7.7.7",
-    "@babel/core": "^7.7.7",
     "@vue/cli": "^4.1.1",
+    "@vue/test-utils": "^1.0.3",
     "axios": "^0.19.0",
     "babel-jest": "^24.9.0",
     "file-loader": "^6.0.0",

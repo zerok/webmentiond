@@ -2207,6 +2207,15 @@
   optionalDependencies:
     prettier "^1.18.2"
 
+"@vue/test-utils@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@vue/test-utils/-/test-utils-1.0.3.tgz#587c4dd9b424b66022f188c19bc605da2ce91c6f"
+  integrity sha512-mmsKXZSGfvd0bH05l4SNuczZ2MqlJH2DWhiul5wJXFxbf/gRRd2UL4QZgozEMQ30mRi9i4/+p4JJat8S4Js64Q==
+  dependencies:
+    dom-event-types "^1.0.0"
+    lodash "^4.17.15"
+    pretty "^2.0.0"
+
 "@webassemblyjs/ast@1.9.0":
   version "1.9.0"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.9.0.tgz#bd850604b4042459a5a41cd7d338cbed695ed964"
@@ -4204,6 +4213,15 @@ concat-stream@^1.5.0:
     readable-stream "^2.2.2"
     typedarray "^0.0.6"
 
+condense-newlines@^0.2.1:
+  version "0.2.1"
+  resolved "https://registry.yarnpkg.com/condense-newlines/-/condense-newlines-0.2.1.tgz#3de985553139475d32502c83b02f60684d24c55f"
+  integrity sha1-PemFVTE5R10yUCyDsC9gaE0kxV8=
+  dependencies:
+    extend-shallow "^2.0.1"
+    is-whitespace "^0.3.0"
+    kind-of "^3.0.2"
+
 config-chain@^1.1.11, config-chain@^1.1.12:
   version "1.1.12"
   resolved "https://registry.yarnpkg.com/config-chain/-/config-chain-1.1.12.tgz#0fde8d091200eb5e808caf25fe618c02f48e4efa"
@@ -4771,6 +4789,11 @@ dir-glob@^3.0.1:
   integrity sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==
   dependencies:
     path-type "^4.0.0"
+
+dom-event-types@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/dom-event-types/-/dom-event-types-1.0.0.tgz#5830a0a29e1bf837fe50a70cd80a597232813cae"
+  integrity sha512-2G2Vwi2zXTHBGqXHsJ4+ak/iP0N8Ar+G8a7LiD2oup5o4sQWytwqqrZu/O6hIMV0KMID2PL69OhpshLO0n7UJQ==
 
 dom-serializer@0:
   version "0.2.2"
@@ -6886,6 +6909,11 @@ is-typedarray@^1.0.0, is-typedarray@~1.0.0:
   resolved "https://registry.yarnpkg.com/is-typedarray/-/is-typedarray-1.0.0.tgz#e479c80858df0c1b11ddda6940f96011fcda4a9a"
   integrity sha1-5HnICFjfDBsR3dppQPlgEfzaSpo=
 
+is-whitespace@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/is-whitespace/-/is-whitespace-0.3.0.tgz#1639ecb1be036aec69a54cbb401cfbed7114ab7f"
+  integrity sha1-Fjnssb4DauxppUy7QBz77XEUq38=
+
 is-windows@^1.0.1, is-windows@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/is-windows/-/is-windows-1.0.2.tgz#d1850eb9791ecd18e6182ce12a30f396634bb19d"
@@ -7453,7 +7481,7 @@ jest@^26.0:
     import-local "^3.0.2"
     jest-cli "^26.1.0"
 
-js-beautify@^1.6.14:
+js-beautify@^1.6.12, js-beautify@^1.6.14:
   version "1.11.0"
   resolved "https://registry.yarnpkg.com/js-beautify/-/js-beautify-1.11.0.tgz#afb873dc47d58986360093dcb69951e8bcd5ded2"
   integrity sha512-a26B+Cx7USQGSWnz9YxgJNMmML/QG2nqIaL7VVYPCXbqiKz8PN0waSNvroMtvAK6tY7g/wPdNWGEP+JTNIBr6A==
@@ -9115,6 +9143,15 @@ pretty-format@^26.1.0:
     ansi-regex "^5.0.0"
     ansi-styles "^4.0.0"
     react-is "^16.12.0"
+
+pretty@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/pretty/-/pretty-2.0.0.tgz#adbc7960b7bbfe289a557dc5f737619a220d06a5"
+  integrity sha1-rbx5YLe7/iiaVX3F9zdhmiINBqU=
+  dependencies:
+    condense-newlines "^0.2.1"
+    extend-shallow "^2.0.1"
+    js-beautify "^1.6.12"
 
 prismjs@^1.20.0:
   version "1.20.0"
