@@ -84,7 +84,7 @@ func TestVerify(t *testing.T) {
 			Source: "...",
 			Target: "https://target.com",
 		}
-		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><div class=\"h-entry\"><h1 class=\"p-name\">Actual title</h1><a href=\"/\" class=\"u-author h-card\">Author</a><div class=\"e-content\"><p>content</p> <p>next</p></div><a class=\"u-in-reply-to\" href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></div></body></html>"), &mention)
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><div class=\"h-entry\"><h1 class=\"p-name\">Actual title</h1><a href=\"/\" class=\"u-author h-card\">Author</a><div class=\"e-content\"><p>content</p> <p>next</p></div><a href=\"https://something-else.com\">link</a><a class=\"u-in-reply-to\" href=\"https://target.com\">link</a></div></body></html>"), &mention)
 		require.NoError(t, err)
 		require.Equal(t, "Actual title", mention.Title)
 		require.Equal(t, "content next", mention.Content)
@@ -115,5 +115,27 @@ func TestVerify(t *testing.T) {
 			require.Equal(t, "rsvp", mention.Type)
 			require.Equal(t, "yes", mention.RSVP)
 		})
+	})
+	t.Run("like", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\" class=\"u-like-of\">link</a></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "like", mention.Type)
+	})
+	t.Run("like of something else", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><a href=\"https://something-else.com\" class=\"u-like-of\">link</a><a href=\"https://target.com\">link</a></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "", mention.Type)
 	})
 }

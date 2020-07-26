@@ -23,7 +23,8 @@
         <span class="webmention__date">@ {{ mention.created_at }}</span>
       </div>
       <div class="webmention" v-else>
-        <i class="fa fa-link"></i>
+        <i class="fa fa-heart" v-if="mention.type == 'like'"></i>
+        <i class="fa fa-link" v-else></i>
         <a class="webmention__source" :href="mention.source">{{ mention.title }}</a>
         <span v-if="mention.author_name">by {{ mention.author_name }}</span>
         <span class="webmention__date">@ {{ mention.created_at }}</span>
