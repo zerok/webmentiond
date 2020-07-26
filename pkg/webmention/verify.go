@@ -186,7 +186,14 @@ func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
 			mention.Title = name[0].(string)
 		}
 		if commented, ok := mf.Properties["in-reply-to"]; ok && len(commented) > 0 {
-			mention.Type = "comment"
+			if commentedItem, ok := commented[0].(string); ok && commentedItem == mention.Target {
+				mention.Type = "comment"
+			}
+		}
+		if commented, ok := mf.Properties["like-of"]; ok && len(commented) > 0 {
+			if commentedItem, ok := commented[0].(string); ok && commentedItem == mention.Target {
+				mention.Type = "like"
+			}
 		}
 		if rsvp, ok := mf.Properties["rsvp"]; ok && len(rsvp) > 0 {
 			mention.RSVP = rsvp[0].(string)
