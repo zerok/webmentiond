@@ -59,14 +59,14 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 	}
 	var rows *sql.Rows
 	if status != "" {
-		query := "SELECT id, source, target, status, created_at, title, type, author_name, content FROM webmentions WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
+		query := "SELECT id, source, target, status, created_at, title, type, author_name, content, rsvp FROM webmentions WHERE status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?"
 		if err := tx.QueryRowContext(ctx, "SELECT COUNT(id) FROM webmentions WHERE status = ?", status).Scan(&result.Total); err != nil {
 			srv.sendError(ctx, w, err)
 			return
 		}
 		rows, err = tx.QueryContext(ctx, query, status, limit, offset)
 	} else {
-		query := "SELECT id, source, target, status, created_at, title, type, author_name, content FROM webmentions ORDER BY created_at DESC LIMIT ? OFFSET ?"
+		query := "SELECT id, source, target, status, created_at, title, type, author_name, content, rsvp FROM webmentions ORDER BY created_at DESC LIMIT ? OFFSET ?"
 		if err := tx.QueryRowContext(ctx, "SELECT COUNT(id) FROM webmentions").Scan(&result.Total); err != nil {
 			srv.sendError(ctx, w, err)
 			return
@@ -79,7 +79,7 @@ func (srv *Server) handleListMentions(w http.ResponseWriter, r *http.Request) {
 	}
 	for rows.Next() {
 		m := Mention{}
-		if err := rows.Scan(&m.ID, &m.Source, &m.Target, &m.Status, &m.CreatedAt, &m.Title, &m.Type, &m.AuthorName, &m.Content); err != nil {
+		if err := rows.Scan(&m.ID, &m.Source, &m.Target, &m.Status, &m.CreatedAt, &m.Title, &m.Type, &m.AuthorName, &m.Content, &m.RSVP); err != nil {
 			srv.sendError(ctx, w, err)
 			rows.Close()
 			return

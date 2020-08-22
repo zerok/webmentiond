@@ -8,6 +8,9 @@
   <div v-if="mentions && mentions.length">
   <ul class="mention-list">
     <li v-for="mention in mentions" class="mention">
+      <div class="mention__icon">
+        <MentionTypeIcon :mention="mention" />
+      </div>
       <div class="mention__info">
         <span class="mention__title" v-if="mention.title">{{ mention.title }}</span>
         <a class="mention__source" :href="mention.source">{{ mention.source }}</a>
@@ -19,8 +22,8 @@
         </div>
       </div>
       <div class="mention__actions">
-      <button class="button button--small button--positive" v-on:click="approve(mention)"><i class="far fa-thumbs-up"></i> approve</button>
-      <button class="button button--small button--negative" v-on:click="reject(mention)"><i class="far fa-thumbs-down"></i> reject</button>
+        <button class="button button--small button--positive" v-on:click="approve(mention)"><i class="far fa-thumbs-up"></i> approve</button>
+        <button class="button button--small button--negative" v-on:click="reject(mention)"><i class="far fa-thumbs-down"></i> reject</button>
       </div>
     </li>
   </ul>
@@ -33,13 +36,15 @@
 <script>
   import {mapState} from 'vuex';
   import MentionFilters from './MentionFilters.vue';
+  import MentionTypeIcon from './MentionTypeIcon.vue';
   import Loading from './Loading.vue';
   import Paging from './Paging.vue';
 export default {
   components: {
     MentionFilters,
     Loading,
-    Paging
+    Paging,
+    MentionTypeIcon,
   },
   data() {
     return {

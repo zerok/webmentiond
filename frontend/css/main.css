@@ -75,10 +75,15 @@ a {
 @media all and (min-width: 500px) {
     .mention {
         display: grid;
-        grid-template-columns: auto 300px;
+        grid-template-columns: 2em auto 300px;
     }
 }
 
+.mention__icon {
+    text-align: center;
+}
+
+.mention__icon,
 .mention__info,
 .mention__actions {
     padding: 10px 0;
