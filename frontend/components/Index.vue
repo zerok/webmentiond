@@ -24,6 +24,7 @@
       <div class="mention__actions">
         <button class="button button--small button--positive" v-on:click="approve(mention)"><i class="far fa-thumbs-up"></i> approve</button>
         <button class="button button--small button--negative" v-on:click="reject(mention)"><i class="far fa-thumbs-down"></i> reject</button>
+        <button class="button button--small button--negative button--delete" v-on:click="deleteMention(mention)"><i class="far fa-trash"></i> delete</button>
       </div>
     </li>
   </ul>
@@ -85,6 +86,10 @@ export default {
     reject(mention) {
       this.$data.updateTriggered = true;
       this.$store.dispatch('rejectMention', mention);
+    },
+    deleteMention(mention) {
+      this.$data.updateTriggered = true;
+      this.$store.dispatch('deleteMention', mention);
     },
   },
   computed: {

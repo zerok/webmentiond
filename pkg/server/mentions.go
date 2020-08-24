@@ -153,3 +153,41 @@ func (srv *Server) handleMentionStatusUpdate(w http.ResponseWriter, r *http.Requ
 func (srv *Server) handleRejectMention(w http.ResponseWriter, r *http.Request) {
 	srv.handleMentionStatusUpdate(w, r, MentionStatusRejected)
 }
+
+func (srv *Server) handleDeleteMention(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	id := chi.URLParam(r, "id")
+	if id == "" {
+		srv.sendError(ctx, w, &HTTPError{
+			StatusCode: http.StatusBadRequest,
+			Err:        fmt.Errorf("no id provided"),
+		})
+		return
+	}
+	tx, err := srv.cfg.Database.BeginTx(ctx, &sql.TxOptions{
+		ReadOnly: false,
+	})
+	if err != nil {
+		srv.sendError(ctx, w, err)
+		return
+	}
+	result, err := tx.ExecContext(ctx, "DELETE FROM webmentions WHERE id = ?", id)
+	if err != nil {
+		srv.sendError(ctx, w, err)
+		tx.Rollback()
+		return
+	}
+
+	if num, _ := result.RowsAffected(); num < 1 {
+		srv.sendError(ctx, w, &HTTPError{
+			StatusCode: http.StatusBadRequest,
+			Err:        fmt.Errorf("no matching mention found"),
+		})
+		tx.Rollback()
+		return
+	}
+	if err := tx.Commit(); err != nil {
+		srv.sendError(ctx, w, err)
+		return
+	}
+}

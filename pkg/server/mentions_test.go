@@ -72,6 +72,21 @@ func requireMentionStatus(t *testing.T, db *sql.DB, id string, status string) {
 	}
 }
 
+func requireMentionNotExists(t *testing.T, db *sql.DB, id string) {
+	t.Helper()
+	ctx := context.Background()
+	var count int
+	err := db.QueryRowContext(ctx, "SELECT count(id) FROM webmentions WHERE id = ?", id).Scan(&count)
+	if sql.ErrNoRows == err {
+		return
+	}
+	if count == 0 {
+		return
+	}
+	t.Errorf("Mention %s should not exist but exists.", id)
+	t.Fail()
+}
+
 func requireMentionTitle(t *testing.T, db *sql.DB, id string, title string) {
 	t.Helper()
 	ctx := context.Background()
@@ -187,4 +202,18 @@ func TestRejectingMention(t *testing.T) {
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusNotFound, w.Code)
 	requireMetricValue(t, context.Background(), srv, "webmentiond_mentions{status=\rejected\"}", 1)
+}
+
+func TestDeletingMention(t *testing.T) {
+	db := setupDatabase(t)
+	defer db.Close()
+	srv := setupServer(t, db)
+	createMention(t, db, "a", "a", "b")
+	requireMentionStatus(t, db, "a", "new")
+
+	r := httptest.NewRequest(http.MethodDelete, "/manage/mentions/a", nil)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusOK, w.Code)
+	requireMentionNotExists(t, db, "a")
 }

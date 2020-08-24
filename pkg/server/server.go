@@ -72,6 +72,7 @@ func New(configurators ...Configurator) *Server {
 		r.Get("/mentions", srv.handleListMentions)
 		r.Post("/mentions/{id}/approve", srv.handleApproveMention)
 		r.Post("/mentions/{id}/reject", srv.handleRejectMention)
+		r.Delete("/mentions/{id}", srv.handleDeleteMention)
 		r.Post("/send", srv.handleSend)
 		r.Get("/policies", srv.handleListPolicies)
 		r.Delete("/policies/{id}", srv.handleDeletePolicy)

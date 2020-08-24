@@ -204,6 +204,16 @@ const store = new Vuex.Store({
         context.commit('updateMentionStatusStatus', 'failed');
       }
     },
+    async deleteMention(context, mention) {
+      context.commit('updateMentionStatusStatus', 'pending');
+      try {
+        await transport.delete(`${API_BASE_URL}/manage/mentions/${mention.id}`);
+        context.commit('updateMentionStatusStatus', 'succeeded');
+      } catch(e) {
+        console.log(e);
+        context.commit('updateMentionStatusStatus', 'failed');
+      }
+    },
     async setMentionFilterStatus(context, status) {
       // When we change the filter, we should reset the paging
       context.commit('setMentionPagingRequestOffset', 0);
