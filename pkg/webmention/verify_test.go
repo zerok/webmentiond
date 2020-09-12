@@ -3,13 +3,45 @@ package webmention_test
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/require"
 	"github.com/zerok/webmentiond/pkg/webmention"
 )
 
 func TestVerify(t *testing.T) {
+	t.Run("handle redirects", func(t *testing.T) {
+		ctx := context.Background()
+		router := chi.NewRouter()
+		router.Get("/initial", func(w http.ResponseWriter, r *http.Request) {
+			http.Redirect(w, r, "/actual", http.StatusTemporaryRedirect)
+		})
+		router.Get("/actual", func(w http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(w, "<html><body><a href=\"https://zerokspot.com/notes/2020/09/09/podcasts-darknet-diaries/\">text</a></body></html>")
+		})
+		server := httptest.NewServer(router)
+		defer server.Close()
+		mention := &webmention.Mention{
+			Source: fmt.Sprintf("%s/initial", server.URL),
+			Target: "https://zerokspot.com/notes/2020/09/09/podcasts-darknet-diaries/",
+		}
+
+		// It should fail if no redirects are allowed
+		err := webmention.Verify(ctx, mention, func(o *webmention.VerifyOptions) {
+			o.MaxRedirects = 0
+		})
+		require.Error(t, err)
+
+		// It should work if -1 redirects (infinite) redirects are allowed
+		err = webmention.Verify(ctx, mention, func(o *webmention.VerifyOptions) {
+			o.MaxRedirects = -1
+		})
+		require.NoError(t, err)
+	})
 	t.Run("link exists", func(t *testing.T) {
 		ctx := context.Background()
 		v := webmention.NewVerifier()

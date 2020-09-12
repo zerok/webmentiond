@@ -29,7 +29,7 @@ func Verify(ctx context.Context, mention *Mention, configurators ...func(c *Veri
 	}
 	client := &http.Client{}
 	client.CheckRedirect = func(r *http.Request, via []*http.Request) error {
-		if len(via) > cfg.MaxRedirects {
+		if cfg.MaxRedirects > -1 && len(via) > cfg.MaxRedirects {
 			return errors.New("too many redirects")
 		}
 		return nil
