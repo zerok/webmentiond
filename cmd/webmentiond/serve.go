@@ -54,6 +54,7 @@ func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error)
 func newServeCmd() Command {
 	var tokenTTL time.Duration
 	var verificationTimeoutDur time.Duration
+	var verificationMaxRedirects int
 	var notify bool
 	var serveCmd = &cobra.Command{
 		Use:   "serve",
@@ -113,6 +114,7 @@ func newServeCmd() Command {
 				c.NotifyOnVerification = notify
 				c.Policies = pol
 				c.PolicyLoader = policyLoader
+				c.VerificationMaxRedirects = verificationMaxRedirects
 			})
 			if err := srv.MigrateDatabase(ctx); err != nil {
 				return err
@@ -178,6 +180,7 @@ func newServeCmd() Command {
 	serveCmd.Flags().StringSlice("auth-admin-emails", []string{}, "All e-mail addresses that can gain admin-access")
 	cfg.BindPFlag("server.auth_admin_emails", serveCmd.Flags().Lookup("auth-admin-emails"))
 	serveCmd.Flags().DurationVar(&verificationTimeoutDur, "verification-timeout", time.Second*30, "Wait at least this time before re-verifying a source")
+	serveCmd.Flags().IntVar(&verificationMaxRedirects, "verification-max-redirects", 10, "Number of redirects allowed during verification")
 	cfg.BindPFlag("verification.timeout", serveCmd.Flags().Lookup("verification-timeout"))
 
 	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
