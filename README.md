@@ -26,6 +26,9 @@ repository is available on <https://hub.docker.com/r/zerok/webmentiond>.
    - `MAIL_PASSWORD`
    - `MAIL_FROM`
 
+   If you don't have a mailserver that supports TLS set the environment
+   variable `MAIL_NO_TLS` to `true`.
+
 2. Pick an allowed e-mail address that can be used to log in and write it into
    the `AUTH_ADMIN_EMAILS` environment variable.
 

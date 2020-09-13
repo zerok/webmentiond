@@ -70,7 +70,12 @@ func newServeCmd() Command {
 			mailUser := cfg.GetString("email.user")
 			mailPassword := cfg.GetString("email.password")
 			mailFrom := cfg.GetString("email.from")
-			m := mailer.New(fmt.Sprintf("%s:%s", mailHost, mailPort), smtp.PlainAuth("", mailUser, mailPassword, mailHost), &tls.Config{ServerName: mailHost})
+			mailNoTLS := cfg.GetBool("email.no_tls")
+			var mailAuth smtp.Auth
+			if mailUser != "" {
+				mailAuth = smtp.PlainAuth("", mailUser, mailPassword, mailHost)
+			}
+			m := mailer.New(fmt.Sprintf("%s:%s", mailHost, mailPort), mailAuth, !mailNoTLS, &tls.Config{ServerName: mailHost})
 
 			allowedTargetDomains := cfg.GetStringSlice("server.allowed_target_domains")
 			allowedOrigins := cfg.GetStringSlice("server.allowed_origin")
@@ -154,6 +159,7 @@ func newServeCmd() Command {
 	cfg.BindEnv("email.user", "MAIL_USER")
 	cfg.BindEnv("email.password", "MAIL_PASSWORD")
 	cfg.BindEnv("email.from", "MAIL_FROM")
+	cfg.BindEnv("email.no_tls", "MAIL_NO_TLS")
 
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")
 	cfg.BindPFlag("database.path", serveCmd.Flags().Lookup("database"))
