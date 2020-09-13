@@ -50,15 +50,21 @@ type DefaultMailer struct {
 	addr      string
 	auth      smtp.Auth
 	tlsConfig *tls.Config
+	useTLS    bool
 }
 
-func New(addr string, auth smtp.Auth, tlsConfig *tls.Config) *DefaultMailer {
+func New(addr string, auth smtp.Auth, useTLS bool, tlsConfig *tls.Config) *DefaultMailer {
 	m := &DefaultMailer{
 		addr:      addr,
 		auth:      auth,
+		useTLS:    useTLS,
 		tlsConfig: tlsConfig,
 	}
 	return m
+}
+
+func (m *DefaultMailer) String() string {
+	return fmt.Sprintf("DefaultMailer{addr: %s, auth: %s, useTLS: %v}", m.addr, m.auth, m.useTLS)
 }
 
 func (m *DefaultMailer) SendMail(ctx context.Context, from string, to []string, subject string, body string) error {
@@ -67,7 +73,12 @@ func (m *DefaultMailer) SendMail(ctx context.Context, from string, to []string, 
 	msg.From = from
 	msg.Subject = subject
 	msg.Text = []byte(body)
-	err := msg.SendWithTLS(m.addr, m.auth, m.tlsConfig)
+	var err error
+	if m.useTLS {
+		err = msg.SendWithTLS(m.addr, m.auth, m.tlsConfig)
+	} else {
+		err = msg.Send(m.addr, m.auth)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
