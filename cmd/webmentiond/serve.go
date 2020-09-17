@@ -96,6 +96,10 @@ func newServeCmd() Command {
 				return err
 			}
 
+			if err := validateConfig(cfg); err != nil {
+				return fmt.Errorf("configuration invalid: %w", err)
+			}
+
 			db, err := sql.Open("sqlite3", dbpath)
 			if err != nil {
 				return fmt.Errorf("failed to open %s: %w", dbpath, err)
