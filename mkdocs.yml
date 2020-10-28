@@ -1,0 +1,16 @@
+site_name: webmentiond
+repo_url: https://github.com/zerok/webmentiond
+theme:
+  name: mkdocs
+  custom_dir: docs/_theme
+extra_css:
+  - _theme/css/custom.css
+nav:
+  - Home: "index.md"
+  - Getting started: "getting-started.md"
+  - Reference:
+      - "configuration.md"
+  - Guides:
+      - "install-from-archive.md"
+      - "fontawesome.md"
+      - "policies.md"

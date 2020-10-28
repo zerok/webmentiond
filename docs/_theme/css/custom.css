@@ -1,0 +1,11 @@
+a {
+    color: #a11bd6;
+}
+
+a:hover {
+    color: #a11bd6;
+}
+.bg-primary {
+    background: #a11bd6;
+    background-color: #a11bd6 !important;
+}
