@@ -5,6 +5,7 @@ theme:
   custom_dir: docs/_theme
 extra_css:
   - _theme/css/custom.css
+site_url: https://webmentiond.org
 nav:
   - Home: "index.md"
   - Getting started: "getting-started.md"
