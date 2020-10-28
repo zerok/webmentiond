@@ -9,3 +9,6 @@ a:hover {
     background: #a11bd6;
     background-color: #a11bd6 !important;
 }
+.dropdown-item:hover, .dropdown-item:focus {
+    background-color: #a11bd6;
+}
