@@ -54,4 +54,10 @@ run-docker:
 		--auth-admin-emails $(AUTH_ADMIN_EMAILS) \
 		--allowed-target-domains $(ALLOWED_TARGET_DOMAINS)
 
-.PHONY: clean all test frontend-watch docker run
+run-docs:
+	docker run --rm \
+		-v $(PWD):/data \
+		-p 8000:8000 \
+		zerok/mkdocs:latest serve -a 0.0.0.0:8000
+
+.PHONY: clean all test frontend-watch docker run run-docker run-docs
