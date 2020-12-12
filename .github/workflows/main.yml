@@ -7,9 +7,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: actions/setup-go@v1.1.1
+    - uses: actions/setup-go@v1.1.3
       with:
-        go-version: "1.14.4"
+        go-version: "1.15.6"
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
@@ -25,9 +25,9 @@ jobs:
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
-    - uses: actions/setup-go@v1.1.1
+    - uses: actions/setup-go@v1.1.3
       with:
-        go-version: "1.14.4"
+        go-version: "1.15.6"
     - name: Create package
       run: sudo bash -c "wget https://github.com/goreleaser/goreleaser/releases/download/v0.138.0/goreleaser_amd64.deb && dpkg -i goreleaser_amd64.deb && goreleaser release --snapshot"
     - uses: jakejarvis/s3-sync-action@master
