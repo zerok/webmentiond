@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine3.12 AS gobuilder
+FROM golang:1.16-alpine3.13 AS gobuilder
 RUN apk add --no-cache gcc libc-dev git sqlite-dev
 COPY . /src
 WORKDIR /src/cmd/webmentiond
@@ -9,7 +9,7 @@ COPY frontend /src/frontend
 WORKDIR /src/frontend
 RUN yarn && yarn run webpack --mode production
 
-FROM alpine:3.12
+FROM alpine:3.13
 RUN apk add --no-cache sqlite-dev
 VOLUME ["/data"]
 RUN adduser -u 1500 -h /data -H -D webmentiond && \
