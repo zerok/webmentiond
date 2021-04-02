@@ -9,7 +9,9 @@ require (
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-chi/cors v1.0.0
 	github.com/golang-migrate/migrate/v4 v4.7.0
+	github.com/gotestyourself/gotestyourself v2.2.0+incompatible // indirect
 	github.com/jordan-wright/email v0.0.0-20190819015918-041e0cec78b0
+	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mattn/go-sqlite3 v1.11.0
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/ory/dockertest v3.3.5+incompatible

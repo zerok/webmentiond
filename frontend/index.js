@@ -5,6 +5,7 @@ import Login from './components/Login.vue';
 import Send from './components/Send.vue';
 import Policies from './components/Policies.vue';
 import Authenticate from './components/Authenticate.vue';
+import About from './components/About.vue';
 import Vuex from 'vuex';
 import Router from 'vue-router';
 import Axios from 'axios';
@@ -281,6 +282,13 @@ const store = new Vuex.Store({
 
 const router = new Router({
   routes: [
+    {
+      path: '/about',
+      component: About,
+      meta: {
+        title: 'About'
+      },
+    },
     {
       path: '/authenticate/:token',
       component: Authenticate,
