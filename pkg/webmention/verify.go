@@ -44,19 +44,19 @@ func Verify(ctx context.Context, mention *Mention, configurators ...func(c *Veri
 	}
 	v := NewVerifier()
 	defer resp.Body.Close()
-	return v.Verify(ctx, resp, resp.Body, mention)
+	return v.Verify(ctx, req, resp, resp.Body, mention)
 }
 
 // Verifier is used to check if a given response body produced by
 // fetching mention.Source contains a link to mention.Target.
 type Verifier interface {
-	Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error
+	Verify(ctx context.Context, req *http.Request, resp *http.Response, body io.Reader, mention *Mention) error
 }
 
 type htmlVerifier struct {
 }
 
-func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error {
+func (v *htmlVerifier) Verify(ctx context.Context, req *http.Request, resp *http.Response, body io.Reader, mention *Mention) error {
 	var tokenBuffer bytes.Buffer
 	var mfBuffer bytes.Buffer
 	sourceURL, err := url.Parse(mention.Source)
@@ -70,6 +70,7 @@ func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.
 	inAudio := false
 	inVideo := false
 	title := ""
+	baseUrl := req.URL
 	u, err := url.Parse(mention.Source)
 	if err == nil {
 		title = u.Hostname()
@@ -112,7 +113,12 @@ loop:
 				inVideo = true
 			case "source":
 				if inVideo || inAudio {
-					src := getAttr(tokenizer, "src")
+					raw := getAttr(tokenizer, "src")
+					src := raw
+					parsed, err := url.Parse(src)
+					if err == nil {
+						src = baseUrl.ResolveReference(parsed).String()
+					}
 					if src == mention.Target {
 						mention.Title = title
 						contentOK = true
@@ -129,7 +135,12 @@ loop:
 					}
 				}
 			case "img":
-				src := getAttr(tokenizer, "src")
+				raw := getAttr(tokenizer, "src")
+				src := raw
+				parsed, err := url.Parse(src)
+				if err == nil {
+					src = baseUrl.ResolveReference(parsed).String()
+				}
 				if src == mention.Target {
 					mention.Title = title
 					contentOK = true
@@ -145,7 +156,12 @@ loop:
 					continue
 				}
 			case "a":
-				href := getAttr(tokenizer, "href")
+				raw := getAttr(tokenizer, "href")
+				href := raw
+				parsed, err := url.Parse(href)
+				if err == nil {
+					href = baseUrl.ResolveReference(parsed).String()
+				}
 				if href == mention.Target {
 					mention.Title = title
 					contentOK = true
