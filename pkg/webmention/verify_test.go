@@ -52,6 +52,22 @@ func TestVerify(t *testing.T) {
 		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></body></html>"), &mention)
 		require.NoError(t, err)
 	})
+	// If the link to be verified is only available as relative
+	// URL, then we can extrapolate the full URL from the rest of
+	// the request/response:
+	t.Run("link exists (relative)", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "https://source.com/",
+			Target: "https://source.com/target",
+		}
+		resp := http.Response{
+			Request: httptest.NewRequest(http.MethodGet, "https://source.com", nil),
+		}
+		err := v.Verify(ctx, &resp, bytes.NewBufferString("<html><body><a href=\"https://something-else.com\">link</a><a href=\"/target\">link</a></body></html>"), &mention)
+		require.NoError(t, err)
+	})
 	t.Run("link only in text", func(t *testing.T) {
 		ctx := context.Background()
 		v := webmention.NewVerifier()

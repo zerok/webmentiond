@@ -56,6 +56,24 @@ type Verifier interface {
 type htmlVerifier struct {
 }
 
+func resolveURL(u string, resp *http.Response) (string, error) {
+	if strings.HasPrefix(u, "https://") || strings.HasPrefix(u, "http://") {
+		return u, nil
+	}
+	if resp == nil || resp.Request == nil {
+		return u, nil
+	}
+	pu, err := url.Parse(u)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse relative URL")
+	}
+	ru := resp.Request.URL.ResolveReference(pu)
+	if ru == nil {
+		return "", fmt.Errorf("failed to resolve URL")
+	}
+	return ru.String(), nil
+}
+
 func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error {
 	var tokenBuffer bytes.Buffer
 	var mfBuffer bytes.Buffer
@@ -112,7 +130,10 @@ loop:
 				inVideo = true
 			case "source":
 				if inVideo || inAudio {
-					src := getAttr(tokenizer, "src")
+					src, err := resolveURL(getAttr(tokenizer, "src"), resp)
+					if err != nil {
+						continue
+					}
 					if src == mention.Target {
 						mention.Title = title
 						contentOK = true
@@ -129,7 +150,10 @@ loop:
 					}
 				}
 			case "img":
-				src := getAttr(tokenizer, "src")
+				src, err := resolveURL(getAttr(tokenizer, "src"), resp)
+				if err != nil {
+					continue
+				}
 				if src == mention.Target {
 					mention.Title = title
 					contentOK = true
@@ -145,7 +169,10 @@ loop:
 					continue
 				}
 			case "a":
-				href := getAttr(tokenizer, "href")
+				href, err := resolveURL(getAttr(tokenizer, "href"), resp)
+				if err != nil {
+					continue
+				}
 				if href == mention.Target {
 					mention.Title = title
 					contentOK = true
