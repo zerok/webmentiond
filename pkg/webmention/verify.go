@@ -44,19 +44,37 @@ func Verify(ctx context.Context, mention *Mention, configurators ...func(c *Veri
 	}
 	v := NewVerifier()
 	defer resp.Body.Close()
-	return v.Verify(ctx, req, resp, resp.Body, mention)
+	return v.Verify(ctx, resp, resp.Body, mention)
 }
 
 // Verifier is used to check if a given response body produced by
 // fetching mention.Source contains a link to mention.Target.
 type Verifier interface {
-	Verify(ctx context.Context, req *http.Request, resp *http.Response, body io.Reader, mention *Mention) error
+	Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error
 }
 
 type htmlVerifier struct {
 }
 
-func (v *htmlVerifier) Verify(ctx context.Context, req *http.Request, resp *http.Response, body io.Reader, mention *Mention) error {
+func resolveURL(u string, resp *http.Response) (string, error) {
+	if strings.HasPrefix(u, "https://") || strings.HasPrefix(u, "http://") {
+		return u, nil
+	}
+	if resp == nil || resp.Request == nil {
+		return u, nil
+	}
+	pu, err := url.Parse(u)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse relative URL")
+	}
+	ru := resp.Request.URL.ResolveReference(pu)
+	if ru == nil {
+		return "", fmt.Errorf("failed to resolve URL")
+	}
+	return ru.String(), nil
+}
+
+func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.Reader, mention *Mention) error {
 	var tokenBuffer bytes.Buffer
 	var mfBuffer bytes.Buffer
 	sourceURL, err := url.Parse(mention.Source)
@@ -70,7 +88,6 @@ func (v *htmlVerifier) Verify(ctx context.Context, req *http.Request, resp *http
 	inAudio := false
 	inVideo := false
 	title := ""
-	baseUrl := req.URL
 	u, err := url.Parse(mention.Source)
 	if err == nil {
 		title = u.Hostname()
@@ -113,11 +130,9 @@ loop:
 				inVideo = true
 			case "source":
 				if inVideo || inAudio {
-					raw := getAttr(tokenizer, "src")
-					src := raw
-					parsed, err := url.Parse(src)
-					if err == nil {
-						src = baseUrl.ResolveReference(parsed).String()
+					src, err := resolveURL(getAttr(tokenizer, "src"), resp)
+					if err != nil {
+						continue
 					}
 					if src == mention.Target {
 						mention.Title = title
@@ -135,11 +150,9 @@ loop:
 					}
 				}
 			case "img":
-				raw := getAttr(tokenizer, "src")
-				src := raw
-				parsed, err := url.Parse(src)
-				if err == nil {
-					src = baseUrl.ResolveReference(parsed).String()
+				src, err := resolveURL(getAttr(tokenizer, "src"), resp)
+				if err != nil {
+					continue
 				}
 				if src == mention.Target {
 					mention.Title = title
@@ -156,11 +169,9 @@ loop:
 					continue
 				}
 			case "a":
-				raw := getAttr(tokenizer, "href")
-				href := raw
-				parsed, err := url.Parse(href)
-				if err == nil {
-					href = baseUrl.ResolveReference(parsed).String()
+				href, err := resolveURL(getAttr(tokenizer, "href"), resp)
+				if err != nil {
+					continue
 				}
 				if href == mention.Target {
 					mention.Title = title
