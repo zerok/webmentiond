@@ -11,7 +11,9 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/go-chi/chi"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spf13/cobra"
 	"github.com/zerok/webmentiond/pkg/mailer"
 	"github.com/zerok/webmentiond/pkg/policies"
@@ -107,6 +109,8 @@ func newServeCmd() Command {
 			pol := policies.NewRegistry(policies.DEFAULT)
 			policyLoader := &dbPolicyLoader{db: db}
 			defer db.Close()
+			metricsAddr := cfg.GetString("server.metrics_addr")
+			exposeMetrics := metricsAddr == addr
 			srv := server.New(func(c *server.Configuration) {
 				c.Auth.JWTSecret = authJWTSecret
 				c.Auth.AdminEmails = authAdminEmails
@@ -124,6 +128,7 @@ func newServeCmd() Command {
 				c.Policies = pol
 				c.PolicyLoader = policyLoader
 				c.VerificationMaxRedirects = verificationMaxRedirects
+				c.ExposeMetrics = exposeMetrics
 			})
 			if err := srv.MigrateDatabase(ctx); err != nil {
 				return err
@@ -146,6 +151,14 @@ func newServeCmd() Command {
 					}
 				}
 			}()
+			// Start the metrics exporter on a separate listener:
+			if metricsAddr != "" && !exposeMetrics {
+				logger.Info().Msgf("Exposing metrics  via %s...", metricsAddr)
+				startMetricsExporter(ctx, metricsAddr)
+			}
+			if metricsAddr == "" {
+				logger.Info().Msgf("To export metrics set --metrics-addr")
+			}
 			httpSrv := http.Server{}
 			httpSrv.Addr = addr
 			httpSrv.Handler = srv
@@ -171,7 +184,9 @@ func newServeCmd() Command {
 	cfg.BindPFlag("database.migrations", serveCmd.Flags().Lookup("database-migrations"))
 
 	serveCmd.Flags().String("addr", "127.0.0.1:8080", "Address to listen on for HTTP requests")
+	serveCmd.Flags().String("metrics-addr", "", "Address where metrics are exposed")
 	cfg.BindPFlag("server.addr", serveCmd.Flags().Lookup("addr"))
+	cfg.BindPFlag("server.metrics_addr", serveCmd.Flags().Lookup("metrics-addr"))
 
 	serveCmd.Flags().String("public-url", "http://127.0.0.1:8080", "URL used as base for generating links")
 	cfg.BindPFlag("server.public_url", serveCmd.Flags().Lookup("public-url"))
@@ -197,4 +212,13 @@ func newServeCmd() Command {
 	cfg.BindPFlag("notifications.enabled", serveCmd.Flags().Lookup("send-notifications"))
 
 	return newBaseCommand(serveCmd)
+}
+
+func startMetricsExporter(ctx context.Context, addr string) {
+	srv := http.Server{}
+	srv.Addr = addr
+	r := chi.NewRouter()
+	r.Handle("/metrics", promhttp.Handler())
+	srv.Handler = r
+	go srv.ListenAndServe()
 }

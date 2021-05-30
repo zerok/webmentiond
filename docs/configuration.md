@@ -12,6 +12,17 @@ This is the network address the server should listen to for requests.
 
 Default: `127.0.0.1:8080`
 
+### `--metrics-addr ADDR` (flag)
+
+This is the network address the server should listen to for requests exposing
+metrics in a Prometheus-compatible format.
+
+If this flag is not set then *no metrics* are exposed. If it equals the value
+for the `--addr` flag then the metrics are expose by the same HTTP server as
+the request of the API.
+
+Default: ``
+
 
 ### `--public-url URL` (flag)
 

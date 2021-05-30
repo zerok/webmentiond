@@ -64,7 +64,10 @@ func New(configurators ...Configurator) *Server {
 	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
 	})
-	srv.router.With(middleware.NoCache).Handle("/metrics", promhttp.Handler())
+	if cfg.ExposeMetrics {
+		logger.Info().Msgf("Exposing metrics through normal HTTP endpoint")
+		srv.router.With(middleware.NoCache).Handle("/metrics", promhttp.Handler())
+	}
 	srv.router.With(middleware.NoCache).Post("/receive", srv.handleReceive)
 	srv.router.With(middleware.NoCache).Post("/request-login", srv.handleLogin)
 	srv.router.With(middleware.NoCache).Post("/authenticate", srv.handleAuthenticate)

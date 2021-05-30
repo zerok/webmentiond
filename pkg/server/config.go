@@ -67,6 +67,7 @@ type Configuration struct {
 	NotifyOnVerification        bool
 	Policies                    *policies.Registry
 	PolicyLoader                policies.Loader
+	ExposeMetrics               bool
 }
 
 type Configurator func(c *Configuration)
