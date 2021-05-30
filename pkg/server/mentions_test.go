@@ -26,6 +26,7 @@ func setupServer(t *testing.T, db *sql.DB) *server.Server {
 	srv := server.New(func(c *server.Configuration) {
 		c.Database = db
 		c.MigrationsFolder = "migrations"
+		c.ExposeMetrics = true
 	})
 	require.NoError(t, srv.MigrateDatabase(context.Background()))
 	return srv

@@ -75,6 +75,7 @@ func TestReceiver(t *testing.T) {
 	srv := server.New(func(c *server.Configuration) {
 		c.Database = db
 		c.MigrationsFolder = "./migrations"
+		c.ExposeMetrics = true
 	})
 	require.NoError(t, srv.MigrateDatabase(ctx))
 
