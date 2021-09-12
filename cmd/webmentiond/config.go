@@ -36,7 +36,7 @@ func validateConfig(cfg *viper.Viper) error {
 	requireConfigSet(t, cfg, "email.from", "EMAIL_FROM", "")
 	requireConfigStringSliceSet(t, cfg, "server.auth_admin_emails", "", "--auth-admin-emails")
 	requireConfigStringSliceSet(t, cfg, "server.allowed_target_domains", "", "--allowed-target-domains")
-	requireConfigSet(t, cfg, "server.auth_jwt_secret", "", "--auth-jwt-secret")
+	requireConfigSet(t, cfg, "server.auth_jwt_secret", "SERVER_AUTH_JWT_SECRET", "--auth-jwt-secret")
 	requireConfigSet(t, cfg, "database.path", "", "--database")
 	return t.Error()
 }

@@ -98,7 +98,7 @@ Default: `false`
 
 ## Authentication settings
 
-### `--auth-jwt-secret SECRET` (flag)
+### `--auth-jwt-secret SECRET` (flag) / `SERVER_AUTH_JWT_SECRET` (environment)
 
 When you log into the administration UI the server generates a little token for
 you and signs it. The secret is necessary for that signing step. What the

@@ -177,6 +177,7 @@ func newServeCmd() Command {
 	cfg.BindEnv("email.password", "MAIL_PASSWORD")
 	cfg.BindEnv("email.from", "MAIL_FROM")
 	cfg.BindEnv("email.no_tls", "MAIL_NO_TLS")
+	cfg.BindEnv("server.auth_jwt_secret", "SERVER_AUTH_JWT_SECRET")
 
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")
 	cfg.BindPFlag("database.path", serveCmd.Flags().Lookup("database"))
