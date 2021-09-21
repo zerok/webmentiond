@@ -9,7 +9,7 @@
     "@babel/preset-env": "^7.7.7",
     "@vue/cli": "^4.5.12",
     "@vue/test-utils": "^1.0.3",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "babel-jest": "^24.9.0",
     "file-loader": "^6.0.0",
     "jest": "^26.0",
