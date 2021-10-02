@@ -1,4 +1,4 @@
-FROM golang:1.16-alpine3.13 AS gobuilder
+FROM golang:1.17-alpine3.13 AS gobuilder
 RUN apk add --no-cache gcc libc-dev git sqlite-dev
 COPY . /src
 WORKDIR /src/cmd/webmentiond
