@@ -9,7 +9,7 @@ jobs:
     - uses: actions/checkout@v2
     - uses: actions/setup-go@v2
       with:
-        go-version: "1.17.x"
+        go-version: "^1.17.0"
     - uses: actions/setup-node@v1
       with:
         node-version: '12'
@@ -27,9 +27,9 @@ jobs:
         node-version: '12'
     - uses: actions/setup-go@v2
       with:
-        go-version: "1.17.x"
+        go-version: "^1.17.0"
     - name: Create package
-      run: sudo bash -c "wget https://github.com/goreleaser/goreleaser/releases/download/v0.138.0/goreleaser_amd64.deb && dpkg -i goreleaser_amd64.deb && goreleaser release --snapshot"
+      run: sudo bash -c "wget https://github.com/goreleaser/goreleaser/releases/download/v1.3.1/goreleaser_1.3.1_amd64.deb && dpkg -i goreleaser_1.3.1_amd64.deb && goreleaser release --snapshot"
     - uses: jakejarvis/s3-sync-action@master
       with:
         args: --acl public-read --follow-symlinks
@@ -63,6 +63,7 @@ jobs:
     needs:
       - test
       - build-website
+      - build-linux
     if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v2
