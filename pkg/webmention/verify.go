@@ -226,11 +226,9 @@ func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
 			mention.RSVP = rsvp[0].(string)
 		}
 		if contents, ok := mf.Properties["content"]; ok && len(contents) > 0 {
-			if content, ok := contents[0].(map[string]interface{}); ok {
-				if rawContentValue, ok := content["value"]; ok {
-					if contentValue, ok := rawContentValue.(string); ok {
-						mention.Content = contentValue
-					}
+			if content, ok := contents[0].(map[string]string); ok {
+				if contentValue, ok := content["value"]; ok {
+					mention.Content = contentValue
 				}
 			}
 		}
