@@ -207,6 +207,23 @@ func mfFillMentionFromData(mention *Mention, mf *microformats.Data) {
 	}
 }
 
+func mfVerifyInCite(mfs []interface{}, target string) bool {
+	for _, comment := range mfs {
+		if cmt, ok := comment.(*microformats.Microformat); ok {
+			if mfHasType(cmt, "h-cite") {
+				if urls, ok := cmt.Properties["url"]; ok && len(urls) > 0 {
+					for _, url := range urls {
+						if url == target {
+							return true
+						}
+					}
+				}
+			}
+		}
+	}
+	return false
+}
+
 func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
 	if mfHasType(mf, "h-entry") {
 		if name, ok := mf.Properties["name"]; ok && len(name) > 0 {
@@ -216,9 +233,19 @@ func mfFillMention(mention *Mention, mf *microformats.Microformat) bool {
 			if commentedItem, ok := commented[0].(string); ok && commentedItem == mention.Target {
 				mention.Type = "comment"
 			}
+			// This should implement the h-cite approach of responses
+			// (https://indieweb.org/comments#How_to_markup):
+			if mfVerifyInCite(commented, mention.Target) {
+				mention.Type = "comment"
+			}
 		}
 		if commented, ok := mf.Properties["like-of"]; ok && len(commented) > 0 {
 			if commentedItem, ok := commented[0].(string); ok && commentedItem == mention.Target {
+				mention.Type = "like"
+			}
+			// This should implement the h-cite approach of likes
+			// (https://indieweb.org/like#mark_up_and_post_a_like):
+			if mfVerifyInCite(commented, mention.Target) {
 				mention.Type = "like"
 			}
 		}

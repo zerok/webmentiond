@@ -140,6 +140,21 @@ func TestVerify(t *testing.T) {
 		require.Equal(t, "comment", mention.Type)
 	})
 
+	t.Run("comment-with-cite", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><div class=\"h-entry\"><h1 class=\"p-name\">Actual title</h1><a href=\"/\" class=\"u-author h-card\">Author</a><div class=\"e-content\"><p>content</p> <p>next</p></div><div class=\"h-cite u-in-reply-to\"><a href=\"https://something-else.com\">link</a><a class=\"u-url\" href=\"https://target.com\">link</a></div></div></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "Actual title", mention.Title)
+		require.Equal(t, "content next", mention.Content)
+		require.Equal(t, "Author", mention.AuthorName)
+		require.Equal(t, "comment", mention.Type)
+	})
+
 	t.Run("rsvp-extraction", func(t *testing.T) {
 		ctx := context.Background()
 		v := webmention.NewVerifier()
@@ -172,6 +187,17 @@ func TestVerify(t *testing.T) {
 			Target: "https://target.com",
 		}
 		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\" class=\"u-like-of\">link</a></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "like", mention.Type)
+	})
+	t.Run("like-in-cite", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><div class=\"h-cite u-like-of\"><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\" class=\"u-url\">link</a></div></body></html>"), &mention)
 		require.NoError(t, err)
 		require.Equal(t, "like", mention.Type)
 	})
