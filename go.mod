@@ -7,7 +7,7 @@ require (
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/go-chi/cors v1.2.0
 	github.com/golang-migrate/migrate/v4 v4.15.1
-	github.com/jordan-wright/email v0.0.0-20190819015918-041e0cec78b0
+	github.com/jordan-wright/email v4.0.1-0.20210109023952-943e75fe5223+incompatible
 	github.com/mattn/go-sqlite3 v1.14.10
 	github.com/ory/dockertest/v3 v3.8.1
 	github.com/prometheus/client_golang v1.12.0

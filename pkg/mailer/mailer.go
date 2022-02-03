@@ -47,18 +47,53 @@ func (m *DummyMailer) SendMail(ctx context.Context, from string, to []string, su
 }
 
 type DefaultMailer struct {
-	addr      string
-	auth      smtp.Auth
-	tlsConfig *tls.Config
-	useTLS    bool
+	addr        string
+	auth        smtp.Auth
+	tlsConfig   *tls.Config
+	useTLS      bool
+	useStartTLS bool
 }
 
-func New(addr string, auth smtp.Auth, useTLS bool, tlsConfig *tls.Config) *DefaultMailer {
+type DefaultMailerConfigurator func(m *DefaultMailer)
+
+func WithTLSConfig(cfg *tls.Config) DefaultMailerConfigurator {
+	return func(m *DefaultMailer) {
+		m.tlsConfig = cfg
+	}
+}
+
+func WithTLS(v bool) DefaultMailerConfigurator {
+	return func(m *DefaultMailer) {
+		if v {
+			m.useStartTLS = false
+			m.useTLS = true
+		} else {
+			m.useTLS = false
+		}
+	}
+}
+
+func WithStartTLS(v bool) DefaultMailerConfigurator {
+	return func(m *DefaultMailer) {
+		if v {
+			m.useStartTLS = true
+			m.useTLS = false
+		} else {
+			m.useStartTLS = false
+		}
+	}
+}
+
+func New(addr string, auth smtp.Auth, options ...DefaultMailerConfigurator) *DefaultMailer {
 	m := &DefaultMailer{
-		addr:      addr,
-		auth:      auth,
-		useTLS:    useTLS,
-		tlsConfig: tlsConfig,
+		addr:        addr,
+		auth:        auth,
+		useTLS:      true,
+		useStartTLS: false,
+		tlsConfig:   nil,
+	}
+	for _, o := range options {
+		o(m)
 	}
 	return m
 }
@@ -74,7 +109,9 @@ func (m *DefaultMailer) SendMail(ctx context.Context, from string, to []string, 
 	msg.Subject = subject
 	msg.Text = []byte(body)
 	var err error
-	if m.useTLS {
+	if m.useStartTLS {
+		err = msg.SendWithStartTLS(m.addr, m.auth, m.tlsConfig)
+	} else if m.useTLS {
 		err = msg.SendWithTLS(m.addr, m.auth, m.tlsConfig)
 	} else {
 		err = msg.Send(m.addr, m.auth)

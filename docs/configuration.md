@@ -88,6 +88,12 @@ E.g.: `postmaster@12345.mailgun.org`
 Through this setting you can define who should show up as the sender of mails.
 E.g.: `yourname@yoursite.com`.
 
+### `MAIL_USE_STARTTLS` (environment)
+
+If your mail server requires STARTTLS, you can set this environment variable to
+`true` and mails will use this instead of TLS.
+
+
 ### `--send-notifications` (flag)
 
 With this flag you can tell webmentiond to send out email notifications (e.g.

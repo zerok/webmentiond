@@ -73,11 +73,17 @@ func newServeCmd() Command {
 			mailPassword := cfg.GetString("email.password")
 			mailFrom := cfg.GetString("email.from")
 			mailNoTLS := cfg.GetBool("email.no_tls")
+			mailUseStartTLS := cfg.GetBool("email.use_starttls")
 			var mailAuth smtp.Auth
 			if mailUser != "" {
 				mailAuth = smtp.PlainAuth("", mailUser, mailPassword, mailHost)
 			}
-			m := mailer.New(fmt.Sprintf("%s:%s", mailHost, mailPort), mailAuth, !mailNoTLS, &tls.Config{ServerName: mailHost})
+			mailConfigs := []mailer.DefaultMailerConfigurator{}
+			mailConfigs = append(mailConfigs, mailer.WithTLS(!mailNoTLS))
+			mailConfigs = append(mailConfigs, mailer.WithStartTLS(mailUseStartTLS))
+			mailConfigs = append(mailConfigs, mailer.WithTLSConfig(&tls.Config{ServerName: mailHost}))
+
+			m := mailer.New(fmt.Sprintf("%s:%s", mailHost, mailPort), mailAuth, mailConfigs...)
 
 			allowedTargetDomains := cfg.GetStringSlice("server.allowed_target_domains")
 			allowedOrigins := cfg.GetStringSlice("server.allowed_origin")
@@ -177,6 +183,7 @@ func newServeCmd() Command {
 	cfg.BindEnv("email.password", "MAIL_PASSWORD")
 	cfg.BindEnv("email.from", "MAIL_FROM")
 	cfg.BindEnv("email.no_tls", "MAIL_NO_TLS")
+	cfg.BindEnv("email.use_starttls", "MAIL_USE_STARTTLS")
 	cfg.BindEnv("server.auth_jwt_secret", "SERVER_AUTH_JWT_SECRET")
 
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")

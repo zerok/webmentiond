@@ -22,7 +22,7 @@ func TestWithoutTLS(t *testing.T) {
 	res, err := pool.Run("mailhog/mailhog", "latest", []string{})
 	require.NoError(t, err)
 	defer pool.Purge(res)
-	m := New(res.GetHostPort("1025/tcp"), nil, false, nil)
+	m := New(res.GetHostPort("1025/tcp"), nil, WithTLS(false))
 	require.NoError(t, m.SendMail(ctx, "from@zerokspot.com", []string{"to@zerokspot.com"}, "Test email", "Some body content"))
 	requireMailhogMessageTotal(t, res, 1)
 }

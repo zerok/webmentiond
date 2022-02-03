@@ -2,6 +2,7 @@
 
 ## Next
 
+- Support for STARTTLS using `EMAIL_USE_STARTTLS` environment variable
 - Add `SERVER_AUTH_JWT_SECRET` environment variable ([\#43][gh43])
 
 [gh43]: https://github.com/zerok/webmentiond/issues/43
