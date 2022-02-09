@@ -41,3 +41,48 @@ $ docker run --rm \
 When you now go to http://localhost:8080/ui/ you will see a login dialog where
 you can enter your admin e-mail address. For details on the authentication
 flow, please take a look at the "Authentication flow" section below.
+
+## Frontend integration
+
+Let's say, that you expose the webmentiond server on
+`https://example.org/webmentions` and you want people visiting
+`https://example.org` to send you mentions. In this case, you'd need to add the
+following line to the `<head>` of your site's HTML output:
+
+```html
+<link rel="webmention" href="https://example.org/webmentions/receive">
+```
+
+If you now also want show the mentions that you already received for the
+startpage, you'd need to add the following snippet there:
+
+```html
+<div class="webmentions webmentions-container"
+    data-endpoint="https://example.org/webmentions"
+    data-target="https://example.org/"></div>
+<script src="/webmentions/ui/dist/widget.js"></script>
+```
+
+Under the hood, if a user visits `https://example.org/` now, the widget would
+load data with the following request:
+
+```
+GET https://example.org/webmentions/get?target=https://example.org/
+```
+
+... which would result in a JSON response similar to this:
+
+```json
+[
+    {
+        "id":"someid",
+        "source":"https://othersite.com",
+        "target":"",
+        "created_at":"2021-02-11T21:21:01Z",
+        "status":"approved",
+        "title":"some title","content":"some content",
+        "author_name":"someone"
+        "type": "like|empty|rsvp|..."
+    }
+]
+```
