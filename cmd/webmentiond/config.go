@@ -31,9 +31,9 @@ func newConfigCmd() Command {
 
 func validateConfig(cfg *viper.Viper) error {
 	t := &failState{}
-	requireConfigSet(t, cfg, "email.host", "EMAIL_HOST", "")
-	requireConfigSet(t, cfg, "email.port", "EMAIL_PORT", "")
-	requireConfigSet(t, cfg, "email.from", "EMAIL_FROM", "")
+	requireConfigSet(t, cfg, "email.host", "MAIL_HOST", "")
+	requireConfigSet(t, cfg, "email.port", "MAIL_PORT", "")
+	requireConfigSet(t, cfg, "email.from", "MAIL_FROM", "")
 	requireConfigStringSliceSet(t, cfg, "server.auth_admin_emails", "", "--auth-admin-emails")
 	requireConfigStringSliceSet(t, cfg, "server.allowed_target_domains", "", "--allowed-target-domains")
 	requireConfigSet(t, cfg, "server.auth_jwt_secret", "SERVER_AUTH_JWT_SECRET", "--auth-jwt-secret")
