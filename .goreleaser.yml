@@ -16,11 +16,11 @@ archives:
       - default
     format: zip
     files:
-      - frontend/css/**/*
-      - frontend/dist/**/*
+      - frontend/css/*
+      - frontend/dist/*
       - frontend/index.html
       - frontend/demo.html
-      - pkg/server/migrations/**/*
+      - pkg/server/migrations/*
 blobs:
   - provider: s3
     endpoint: https://ams3.digitaloceanspaces.com
