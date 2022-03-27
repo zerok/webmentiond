@@ -2,6 +2,7 @@ package shorteners
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/http"
 )
@@ -10,6 +11,12 @@ type twitterResolver struct{}
 
 func (r *twitterResolver) Resolve(ctx context.Context, link string) (string, error) {
 	client := http.Client{}
+	// Disable HTTP/2 support for now as there are issues with t.co and Go
+	// since 2022-03-26.
+	tr := http.Transport{
+		TLSNextProto: make(map[string]func(string, *tls.Conn) http.RoundTripper),
+	}
+	client.Transport = &tr
 	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
 		return http.ErrUseLastResponse
 	}

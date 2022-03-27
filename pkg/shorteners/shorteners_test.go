@@ -15,7 +15,7 @@ func TestResolve(t *testing.T) {
 
 func TestTwitterResolver(t *testing.T) {
 	ctx := context.Background()
-	link, err := Resolve(ctx, "https://t.co/mEnq1oJX3Q?amp=1")
+	link, err := Resolve(ctx, "https://t.co/JqumM1uaVE")
 	require.NoError(t, err)
-	require.Equal(t, "https://resource-types.concourse-ci.org/", link)
+	require.Equal(t, "https://zerokspot.com/weblog/2022/03/25/pogo-podman-executor-gitlab/", link)
 }

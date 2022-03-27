@@ -83,9 +83,9 @@ func TestVerify(t *testing.T) {
 		v := webmention.NewVerifier()
 		mention := webmention.Mention{
 			Source: "...",
-			Target: "https://resource-types.concourse-ci.org/",
+			Target: "https://zerokspot.com/weblog/2022/03/25/pogo-podman-executor-gitlab/",
 		}
-		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body><a href=\"https://t.co/mEnq1oJX3Q?amp=1\">link</a></body></html>"), &mention)
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body><a href=\"https://t.co/JqumM1uaVE\">link</a></body></html>"), &mention)
 		require.NoError(t, err)
 	})
 	t.Run("link doesn't exists", func(t *testing.T) {
