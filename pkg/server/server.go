@@ -70,6 +70,7 @@ func New(configurators ...Configurator) *Server {
 	}
 	srv.router.With(middleware.NoCache).Post("/receive", srv.handleReceive)
 	srv.router.With(middleware.NoCache).Post("/request-login", srv.handleLogin)
+	srv.router.With(middleware.NoCache).Post("/authenticate/access-key", srv.handleAuthenticateWithAccessKey)
 	srv.router.With(middleware.NoCache).Post("/authenticate", srv.handleAuthenticate)
 	srv.router.With(middleware.NoCache, srv.requireAuthMiddleware).Route("/manage", func(r chi.Router) {
 		r.Get("/mentions", srv.handleListMentions)

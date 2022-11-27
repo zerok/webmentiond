@@ -44,10 +44,17 @@ type ReceiverConfiguration struct {
 
 type SenderConfiguration struct{}
 
+type StaticAccessKey struct {
+	Key  string
+	Name string
+}
+
 type AuthConfiguration struct {
-	AdminEmails []string
-	JWTSecret   string
-	JWTTTL      time.Duration
+	AdminEmails      []string
+	AdminAccessKeys  map[string]string
+	JWTSecret        string
+	JWTTTL           time.Duration
+	StaticAccessKeys []StaticAccessKey
 }
 
 type Configuration struct {

@@ -120,6 +120,7 @@ func newServeCmd() Command {
 			srv := server.New(func(c *server.Configuration) {
 				c.Auth.JWTSecret = authJWTSecret
 				c.Auth.AdminEmails = authAdminEmails
+				c.Auth.AdminAccessKeys = cfg.GetStringMapString("server.auth_admin_access_keys")
 				c.Auth.JWTTTL = tokenTTL
 				c.Context = ctx
 				c.Database = db
@@ -215,6 +216,9 @@ func newServeCmd() Command {
 	serveCmd.Flags().DurationVar(&verificationTimeoutDur, "verification-timeout", time.Second*30, "Wait at least this time before re-verifying a source")
 	serveCmd.Flags().IntVar(&verificationMaxRedirects, "verification-max-redirects", 10, "Number of redirects allowed during verification")
 	cfg.BindPFlag("verification.timeout", serveCmd.Flags().Lookup("verification-timeout"))
+
+	serveCmd.Flags().StringToString("auth-admin-access-keys", map[string]string{}, "Static access keys for the API")
+	cfg.BindPFlag("server.auth_admin_access_keys", serveCmd.Flags().Lookup("auth-admin-access-keys"))
 
 	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
 	cfg.BindPFlag("notifications.enabled", serveCmd.Flags().Lookup("send-notifications"))

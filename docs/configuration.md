@@ -125,6 +125,13 @@ You log into the administration UI using your e-mail address. In order for the
 system to know who should be able to log in, you have to specify their e-mail
 address here.
 
+### `--auth-admin-access-key KEY=KEYLABEL` (flag)
+
+For special circumstances (e.g. CI integration) you might want to allow
+programmatic access to the administrative API. With this you can specify access
+keys that you can send to `/api/authenticate/access-key` in order to retrieve a
+JWT.
+
 
 ## Using a configuration file
 
