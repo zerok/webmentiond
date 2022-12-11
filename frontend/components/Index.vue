@@ -7,7 +7,7 @@
   <Loading v-if="getMentionsStatus == 'pending'" />
   <div v-if="mentions && mentions.length">
   <ul class="mention-list">
-    <li v-for="mention in mentions" class="mention">
+    <li v-for="mention in mentions" class="mention" :key="mention.id">
       <div class="mention__icon">
         <MentionTypeIcon :mention="mention" />
       </div>

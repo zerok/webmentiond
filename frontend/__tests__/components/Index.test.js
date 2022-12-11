@@ -1,11 +1,9 @@
 import Index from '../../components/Index.vue';
-import { mount, createLocalVue } from "@vue/test-utils"
 import Vuex from 'vuex';
+import { mount } from "@vue/test-utils"
 
 describe('Index', () => {
   it('should render no list if empty', () => {
-    const localVue = createLocalVue();
-    localVue.use(Vuex);
     const store = new Vuex.Store({
         state: {
             mentions: []
@@ -15,15 +13,14 @@ describe('Index', () => {
         }
     });
     const wrapper = mount(Index, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
     });
     expect(wrapper.find('.mention-list').exists()).toBeFalsy();
   });
 
   it('should render a delete button for every mention', () => {
-    const localVue = createLocalVue();
-    localVue.use(Vuex);
     const store = new Vuex.Store({
         state: {
             mentions: [{
@@ -38,8 +35,9 @@ describe('Index', () => {
         }
     });
     const wrapper = mount(Index, {
-        store,
-        localVue
+        global: {
+          plugins: [store]
+        }
     });
     expect(wrapper.find('.mention-list').exists()).toBeTruthy();
     expect(wrapper.find('.mention-list li button.button--delete').exists()).toBeTruthy();

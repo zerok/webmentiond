@@ -40,10 +40,15 @@ a {
 .button {
     display: inline-block;
     border: 1px solid #CCC;
+    margin: 0 1px;
     font-size: 16px;
     line-height: 30px;
     font-weight: normal;
     border-radius: 2px;
+}
+
+button:first-child {  
+    margin: 0 1px 0 0;
 }
 
 .button--primary {
