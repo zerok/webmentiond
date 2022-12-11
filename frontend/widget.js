@@ -1,8 +1,6 @@
-import Vue from 'vue';
+import {createApp} from 'vue';
 import Widget from './components/widget/Widget.vue';
 import Vuex from 'vuex';
-
-Vue.use(Vuex);
 
 const store = new Vuex.Store({
     state: {
@@ -22,29 +20,27 @@ const store = new Vuex.Store({
     }
 });
 
-var app = new Vue({
-    el: '.webmentions-container',
-    store: store,
-    components: {
-        Widget
-    },
-    beforeMount: function() {
-        this.$data.config = this.$el.dataset;
-        const rawContent = this.$el.innerText;
-        this.$data.mentions = null;
-        if (rawContent) {
-            this.$data.mentions = JSON.parse(rawContent);
-        }
-    },
-    render: function (createElement) {
-        return createElement('Widget', {
-            props: {
-                title: this.$data.config.title || 'Mentions',
-                endpoint: this.$data.config.endpoint,
-                target: this.$data.config.target,
-                showRSVPSummary: this.$data.config.rsvpSummary === 'yes',
-                mentions: this.$data.mentions || null,
-            }
-        });
+const setup = () => {
+    const container = document.querySelector('.webmentions-container');
+    if (typeof container === 'undefined') {
+        return;
     }
-});
+    const mentions = container.innerText !== '' ? JSON.parse(container.innerText) : null;
+    const title = container.dataset.title || 'Mentions';
+    const endpoint = container.dataset.endpoint;
+    const target = container.dataset.target;
+    const showRSVPSummary = container.dataset.showRSVPSummary === 'yes';
+
+    const app = createApp(Widget, {
+        mentions,
+        endpoint,
+        title,
+        showRSVPSummary,
+        target
+    });
+    
+    app.use(store);
+    app.mount(container);
+};
+
+setup();

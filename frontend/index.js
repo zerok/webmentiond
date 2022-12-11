@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { createApp } from 'vue';
 import App from './components/App.vue';
 import Index from './components/Index.vue';
 import Login from './components/Login.vue';
@@ -7,10 +7,8 @@ import Policies from './components/Policies.vue';
 import Authenticate from './components/Authenticate.vue';
 import About from './components/About.vue';
 import Vuex from 'vuex';
-import Router from 'vue-router';
+import { createRouter, createWebHashHistory } from 'vue-router';
 import Axios from 'axios';
-Vue.use(Vuex);
-Vue.use(Router);
 
 // Strip the "/ui/" from the current location:
 const API_BASE_URL = window.location.pathname.substring(0, window.location.pathname.length - 4);
@@ -280,7 +278,8 @@ const store = new Vuex.Store({
   }
 });
 
-const router = new Router({
+const router = createRouter({
+  history: createWebHashHistory(),
   routes: [
     {
       path: '/about',
@@ -368,11 +367,8 @@ router.beforeEach((to, from, next) => {
   next();
 });
 
-new Vue({
-  el: '#app',
-  store,
-  router,
-  render: function(createElement) {
-    return createElement(App);
-  }
-});
+const app = createApp(App);
+
+app.use(store);
+app.use(router);
+app.mount('#app');

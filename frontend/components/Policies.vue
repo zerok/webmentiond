@@ -11,7 +11,7 @@
           <span class="policy__pattern">{{ policy.url_pattern }}</span>
           <span class="policy__policy"><i class="fa fa-exclamation"></i>{{ policy.policy }}</span>
           <span class="policy__weight"><i class="fa fa-weight-hanging"></i>{{ policy.weight }}</span>
-          <button class="button button--negative" @click="deletePolicy(policy.id)"><i class="fa fa-trash"></i> Delete</button></td>
+          <button class="button button--negative" @click="deletePolicy(policy.id)"><i class="fa fa-trash"></i> Delete</button>
         </li>
       </ul>
       <p class="empty" v-else>No policies defined yet 🙂</p>
