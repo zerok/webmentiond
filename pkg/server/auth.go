@@ -120,14 +120,14 @@ func (srv *Server) handleAuthenticateWithAccessKey(w http.ResponseWriter, r *htt
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized, Err: fmt.Errorf("invalid key")})
 		return
 	}
-	if err := srv.generateJWT(ctx, w, fmt.Sprintf("key:%s", name)); err != nil {
+	if err := srv.generateJWT(ctx, w, fmt.Sprintf("key:%s", name), srv.cfg.Auth.AdminAccessKeyJWTTL); err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
 }
 
-func (srv *Server) generateJWT(ctx context.Context, w http.ResponseWriter, subject string) error {
-	exp := time.Now().Add(srv.cfg.Auth.JWTTTL).Unix()
+func (srv *Server) generateJWT(ctx context.Context, w http.ResponseWriter, subject string, ttl time.Duration) error {
+	exp := time.Now().Add(ttl).Unix()
 	claims := &jwt.StandardClaims{
 		Issuer:    "webmentiond",
 		Subject:   subject,
@@ -170,7 +170,7 @@ func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("token invalid")})
 		return
 	}
-	if err := srv.generateJWT(ctx, w, matchingMail); err != nil {
+	if err := srv.generateJWT(ctx, w, matchingMail, srv.cfg.Auth.JWTTTL); err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}

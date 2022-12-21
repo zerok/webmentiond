@@ -50,11 +50,12 @@ type StaticAccessKey struct {
 }
 
 type AuthConfiguration struct {
-	AdminEmails      []string
-	AdminAccessKeys  map[string]string
-	JWTSecret        string
-	JWTTTL           time.Duration
-	StaticAccessKeys []StaticAccessKey
+	AdminEmails         []string
+	AdminAccessKeys     map[string]string
+	AdminAccessKeyJWTTL time.Duration
+	JWTSecret           string
+	JWTTTL              time.Duration
+	StaticAccessKeys    []StaticAccessKey
 }
 
 type Configuration struct {

@@ -18,6 +18,7 @@ import (
 )
 
 func TestAccessKeyAuthentication(t *testing.T) {
+	secret := "12345"
 	logger := zerolog.New(zerolog.ConsoleWriter{Out: os.Stderr}).Level(zerolog.DebugLevel)
 	ctx := logger.WithContext(context.Background())
 	srv := New(func(c *Configuration) {
@@ -25,6 +26,7 @@ func TestAccessKeyAuthentication(t *testing.T) {
 			"test-key": "ci",
 		}
 		c.Auth.JWTTTL = time.Hour * 24 * 7
+		c.Auth.JWTSecret = secret
 	})
 
 	t.Run("valid-key", func(t *testing.T) {
@@ -38,6 +40,19 @@ func TestAccessKeyAuthentication(t *testing.T) {
 		require.Equal(t, w.Header().Get("Content-Type"), "application/jwt")
 		jot := w.Body.Bytes()
 		require.NotEmpty(t, jot)
+
+		// Let's check that the generated token is actually valid for roughly an hour
+		token, err := jwt.Parse(string(jot), func(token *jwt.Token) (interface{}, error) {
+			return []byte(secret), nil
+		})
+		require.NoError(t, err)
+		require.NotNil(t, token)
+		claims, ok := token.Claims.(jwt.MapClaims)
+		require.True(t, ok)
+		exp := time.Unix(int64(claims["exp"].(float64)), 0)
+		now := time.Now()
+		require.True(t, now.Before(exp), "token is not valid *now*")
+		require.True(t, now.Add(time.Minute*70).After(exp), "token is valid beyond one hour")
 
 		// Now try to log in with the given token
 		w = httptest.NewRecorder()

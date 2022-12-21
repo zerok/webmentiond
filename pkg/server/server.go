@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -35,6 +36,7 @@ func New(configurators ...Configurator) *Server {
 		Context:                  context.Background(),
 		VerificationMaxRedirects: -1,
 	}
+	cfg.Auth.AdminAccessKeyJWTTL = time.Hour
 	for _, configurator := range configurators {
 		configurator(&cfg)
 	}

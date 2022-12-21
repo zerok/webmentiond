@@ -55,6 +55,7 @@ func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error)
 
 func newServeCmd() Command {
 	var tokenTTL time.Duration
+	var accessKeyTokenTTL time.Duration
 	var verificationTimeoutDur time.Duration
 	var verificationMaxRedirects int
 	var notify bool
@@ -122,6 +123,7 @@ func newServeCmd() Command {
 				c.Auth.AdminEmails = authAdminEmails
 				c.Auth.AdminAccessKeys = cfg.GetStringMapString("server.auth_admin_access_keys")
 				c.Auth.JWTTTL = tokenTTL
+				c.Auth.AdminAccessKeyJWTTL = accessKeyTokenTTL
 				c.Context = ctx
 				c.Database = db
 				c.MigrationsFolder = migrationsFolder
@@ -219,6 +221,8 @@ func newServeCmd() Command {
 
 	serveCmd.Flags().StringToString("auth-admin-access-keys", map[string]string{}, "Static access keys for the API")
 	cfg.BindPFlag("server.auth_admin_access_keys", serveCmd.Flags().Lookup("auth-admin-access-keys"))
+	serveCmd.Flags().DurationVar(&accessKeyTokenTTL, "auth-admin-access-key-jwt-ttl", time.Hour, "TTL of the generated JWTs")
+	cfg.BindPFlag("server.auth_admin_access_key_jwt_ttl", serveCmd.Flags().Lookup("auth-admin-access-key-jwt-ttl"))
 
 	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
 	cfg.BindPFlag("notifications.enabled", serveCmd.Flags().Lookup("send-notifications"))

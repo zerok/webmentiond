@@ -132,6 +132,13 @@ programmatic access to the administrative API. With this you can specify access
 keys that you can send to `/api/authenticate/access-key` in order to retrieve a
 JWT.
 
+### `--auth-admin-access-key-jwt-ttl DURATION` (flag)
+
+This value determines how long you can stay logged into the administration UI
+without having to re-login if the JWT was created using an admin access key.
+
+Default: `1h` (1 hour)
+
 
 ## Using a configuration file
 
