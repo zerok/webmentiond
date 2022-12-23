@@ -137,7 +137,7 @@ JWT.
 This value determines how long you can stay logged into the administration UI
 without having to re-login if the JWT was created using an admin access key.
 
-Default: `1h` (1 hour)
+Default: `5m` (5 minutes)
 
 
 ## Using a configuration file

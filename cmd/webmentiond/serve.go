@@ -221,7 +221,7 @@ func newServeCmd() Command {
 
 	serveCmd.Flags().StringToString("auth-admin-access-keys", map[string]string{}, "Static access keys for the API")
 	cfg.BindPFlag("server.auth_admin_access_keys", serveCmd.Flags().Lookup("auth-admin-access-keys"))
-	serveCmd.Flags().DurationVar(&accessKeyTokenTTL, "auth-admin-access-key-jwt-ttl", time.Hour, "TTL of the generated JWTs")
+	serveCmd.Flags().DurationVar(&accessKeyTokenTTL, "auth-admin-access-key-jwt-ttl", time.Minute*5, "TTL of the generated JWTs")
 	cfg.BindPFlag("server.auth_admin_access_key_jwt_ttl", serveCmd.Flags().Lookup("auth-admin-access-key-jwt-ttl"))
 
 	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
