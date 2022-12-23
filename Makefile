@@ -34,8 +34,10 @@ docker:
 
 run: bin/webmentiond
 	./bin/webmentiond serve \
+		--verbose \
 		--addr localhost:8080 \
 		--auth-jwt-secret testsecret \
+		--auth-admin-access-keys 12345=ci \
 		--auth-admin-emails $(AUTH_ADMIN_EMAILS) \
 		--allowed-target-domains $(ALLOWED_TARGET_DOMAINS)
 

@@ -55,6 +55,7 @@ func (l *dbPolicyLoader) Load(ctx context.Context) ([]policies.URLPolicy, error)
 
 func newServeCmd() Command {
 	var tokenTTL time.Duration
+	var accessKeyTokenTTL time.Duration
 	var verificationTimeoutDur time.Duration
 	var verificationMaxRedirects int
 	var notify bool
@@ -120,7 +121,9 @@ func newServeCmd() Command {
 			srv := server.New(func(c *server.Configuration) {
 				c.Auth.JWTSecret = authJWTSecret
 				c.Auth.AdminEmails = authAdminEmails
+				c.Auth.AdminAccessKeys = cfg.GetStringMapString("server.auth_admin_access_keys")
 				c.Auth.JWTTTL = tokenTTL
+				c.Auth.AdminAccessKeyJWTTL = accessKeyTokenTTL
 				c.Context = ctx
 				c.Database = db
 				c.MigrationsFolder = migrationsFolder
@@ -215,6 +218,11 @@ func newServeCmd() Command {
 	serveCmd.Flags().DurationVar(&verificationTimeoutDur, "verification-timeout", time.Second*30, "Wait at least this time before re-verifying a source")
 	serveCmd.Flags().IntVar(&verificationMaxRedirects, "verification-max-redirects", 10, "Number of redirects allowed during verification")
 	cfg.BindPFlag("verification.timeout", serveCmd.Flags().Lookup("verification-timeout"))
+
+	serveCmd.Flags().StringToString("auth-admin-access-keys", map[string]string{}, "Static access keys for the API")
+	cfg.BindPFlag("server.auth_admin_access_keys", serveCmd.Flags().Lookup("auth-admin-access-keys"))
+	serveCmd.Flags().DurationVar(&accessKeyTokenTTL, "auth-admin-access-key-jwt-ttl", time.Minute*5, "TTL of the generated JWTs")
+	cfg.BindPFlag("server.auth_admin_access_key_jwt_ttl", serveCmd.Flags().Lookup("auth-admin-access-key-jwt-ttl"))
 
 	serveCmd.Flags().BoolVar(&notify, "send-notifications", false, "Send email notifications about new/updated webmentions")
 	cfg.BindPFlag("notifications.enabled", serveCmd.Flags().Lookup("send-notifications"))

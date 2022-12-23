@@ -53,6 +53,13 @@ func (srv *Server) requireAuthMiddleware(handler http.Handler) http.Handler {
 			return
 		}
 
+		for _, k := range srv.cfg.Auth.AdminAccessKeys {
+			if claims["sub"] == formatAccessKeySubject(k) {
+				handler.ServeHTTP(w, r.WithContext(AuthorizeContext(ctx)))
+				return
+			}
+		}
+
 		for _, e := range srv.cfg.Auth.AdminEmails {
 			if e == claims["sub"] {
 				handler.ServeHTTP(w, r.WithContext(AuthorizeContext(ctx)))
@@ -96,6 +103,46 @@ func (srv *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (srv *Server) handleAuthenticateWithAccessKey(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	if err := r.ParseForm(); err != nil {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: err})
+		return
+	}
+	key := r.FormValue("key")
+	if key == "" {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("token key")})
+		return
+	}
+
+	name, ok := srv.cfg.Auth.AdminAccessKeys[key]
+	if !ok {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusUnauthorized, Err: fmt.Errorf("invalid key")})
+		return
+	}
+	if err := srv.generateJWT(ctx, w, fmt.Sprintf("key:%s", name), srv.cfg.Auth.AdminAccessKeyJWTTL); err != nil {
+		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
+		return
+	}
+}
+
+func (srv *Server) generateJWT(ctx context.Context, w http.ResponseWriter, subject string, ttl time.Duration) error {
+	exp := time.Now().Add(ttl).Unix()
+	claims := &jwt.StandardClaims{
+		Issuer:    "webmentiond",
+		Subject:   subject,
+		ExpiresAt: exp,
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
+	signedToken, err := token.SignedString([]byte(srv.cfg.Auth.JWTSecret))
+	if err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/jwt")
+	w.Write([]byte(signedToken))
+	return nil
+}
+
 // handleAuthenticate accepts a login code and generates a token
 // attached to the response as cookie.
 func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
@@ -123,19 +170,13 @@ func (srv *Server) handleAuthenticate(w http.ResponseWriter, r *http.Request) {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusBadRequest, Err: fmt.Errorf("token invalid")})
 		return
 	}
-	exp := time.Now().Add(srv.cfg.Auth.JWTTTL).Unix()
-	claims := &jwt.StandardClaims{
-		Issuer:    "webmentiond",
-		Subject:   matchingMail,
-		ExpiresAt: exp,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
-	signedToken, err := token.SignedString([]byte(srv.cfg.Auth.JWTSecret))
-	if err != nil {
+	if err := srv.generateJWT(ctx, w, matchingMail, srv.cfg.Auth.JWTTTL); err != nil {
 		srv.sendError(ctx, w, &HTTPError{StatusCode: http.StatusInternalServerError, Err: err})
 		return
 	}
-	w.Header().Set("Content-Type", "application/jwt")
-	w.Write([]byte(signedToken))
 	delete(srv.validToken, matchingMail)
+}
+
+func formatAccessKeySubject(keyName string) string {
+	return fmt.Sprintf("key:%s", keyName)
 }
