@@ -14,6 +14,7 @@ func newSendCmd() Command {
 		Short: "Send a mention from source to target",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := logger.WithContext(context.Background())
+			failed := false
 			if len(args) < 1 {
 				return fmt.Errorf("source is required")
 			}
@@ -43,19 +44,26 @@ func newSendCmd() Command {
 					}
 					if ep == "" {
 						logger.Warn().Err(err).Msgf("%s doesn't expose webmention endpoint", target)
+						failed = true
 						continue
 					}
 				}
 				sender := webmention.NewSender()
 				logger.Info().Msgf("Endpoint: %s", ep)
 				if err := sender.Send(ctx, ep, mention); err != nil {
-					return fmt.Errorf("failed to send webmention: %w", err)
+					logger.Error().Err(err).Msgf("Failed to send webmention to %s", target)
 				}
+			}
+
+			if exitOnFailure, _ := cmd.Flags().GetBool("fail"); failed && exitOnFailure {
+				return fmt.Errorf("sending webmentions failed")
+
 			}
 			return nil
 		},
 	}
 
 	sendCmd.Flags().String("endpoint", "", "Endpoint to send the mention to")
+	sendCmd.Flags().Bool("fail", false, "Exit with error code if sending a webmention fails")
 	return newBaseCommand(sendCmd)
 }
