@@ -100,6 +100,19 @@ func TestVerify(t *testing.T) {
 	})
 
 	t.Run("title-extraction", func(t *testing.T) {
+		// SVG elements can also contain a title (as can others). We want only
+		// the <title> in the html > head to be considered:
+		t.Run("title-must-be-in-head", func(t *testing.T) {
+			ctx := context.Background()
+			v := webmention.NewVerifier()
+			mention := webmention.Mention{
+				Source: "...",
+				Target: "https://target.com",
+			}
+			err := v.Verify(ctx, nil, bytes.NewBufferString("<html><head><title>Sample title</title></head><body><title>Wrong title</title><a href=\"https://something-else.com\">link</a><a href=\"https://target.com\">link</a></body></html>"), &mention)
+			require.NoError(t, err)
+			require.Equal(t, "Sample title", mention.Title)
+		})
 		t.Run("title-present", func(t *testing.T) {
 			ctx := context.Background()
 			v := webmention.NewVerifier()

@@ -88,6 +88,7 @@ func (v *htmlVerifier) Verify(ctx context.Context, resp *http.Response, body io.
 	inAudio := false
 	inVideo := false
 	title := ""
+	elementStack := make([]string, 0, 10)
 	u, err := url.Parse(mention.Source)
 	if err == nil {
 		title = u.Hostname()
@@ -102,6 +103,7 @@ loop:
 				title = strings.TrimSpace(string(tokenizer.Text()))
 			}
 		case html.EndTagToken:
+			elementStack = elementStack[0 : len(elementStack)-1]
 			tagName, _ := tokenizer.TagName()
 			switch string(tagName) {
 			case "title":
@@ -121,9 +123,12 @@ loop:
 			fallthrough
 		case html.StartTagToken:
 			tagName, _ := tokenizer.TagName()
+			elementStack = append(elementStack, string(tagName))
 			switch string(tagName) {
 			case "title":
-				inTitle = true
+				if hasStackParents(elementStack, []string{"html", "head"}) {
+					inTitle = true
+				}
 			case "audio":
 				inAudio = true
 			case "video":
@@ -303,4 +308,16 @@ func getAttr(tokenizer *html.Tokenizer, attr string) string {
 		}
 	}
 	return result
+}
+
+func hasStackParents(elementStack, parents []string) bool {
+	if len(parents) >= len(elementStack) {
+		return false
+	}
+	for idx, parent := range parents {
+		if elementStack[idx] != parent {
+			return false
+		}
+	}
+	return true
 }
