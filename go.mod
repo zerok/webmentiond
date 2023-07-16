@@ -1,6 +1,6 @@
 module github.com/zerok/webmentiond
 
-go 1.17
+go 1.20
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -15,7 +15,8 @@ require (
 	github.com/rs/zerolog v1.26.1
 	github.com/spf13/cobra v1.3.0
 	github.com/spf13/viper v1.10.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.8.2
+	go.opentelemetry.io/otel v1.15.1
 	golang.org/x/net v0.0.0-20211013171255-e13a2654a71e
 	willnorris.com/go/microformats v1.1.1
 )
@@ -70,5 +71,5 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/ini.v1 v1.66.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

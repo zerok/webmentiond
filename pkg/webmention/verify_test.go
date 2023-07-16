@@ -212,4 +212,26 @@ func TestVerify(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, "", mention.Type)
 	})
+	t.Run("detect img target", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><img src=\"https://target.com\" /></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "", mention.Type)
+	})
+	t.Run("detect audio source target", func(t *testing.T) {
+		ctx := context.Background()
+		v := webmention.NewVerifier()
+		mention := webmention.Mention{
+			Source: "...",
+			Target: "https://target.com",
+		}
+		err := v.Verify(ctx, nil, bytes.NewBufferString("<html><body class=\"h-entry\"><audio><source src=\"https://target.com\" /></audio></body></html>"), &mention)
+		require.NoError(t, err)
+		require.Equal(t, "", mention.Type)
+	})
 }

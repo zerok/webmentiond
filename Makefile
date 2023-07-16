@@ -18,7 +18,8 @@ bin/webmentiond: $(shell find . -name '*.go') go.mod bin
 	cd cmd/webmentiond && go build -o ../../$@
 
 test:
-	go test ./... -v
+	go test ./... -v -cover -coverprofile cover.out
+	go tool cover -html cover.out -o cover.html
 
 frontend/fontawesome: frontend/$(fontawesome_archive)
 	cd frontend && unzip $(fontawesome_archive) && mv "fontawesome-pro-$(fontawesome_version)-web" fontawesome

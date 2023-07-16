@@ -1,6 +1,9 @@
-name: CI
+name: Main
 
-on: [push]
+on:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   test:
@@ -20,6 +23,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     needs: test
+    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-node@v2
@@ -46,7 +50,6 @@ jobs:
   build-website:
     runs-on: ubuntu-latest
     needs: test
-    if: ${{ github.ref == 'refs/heads/main' }}
     env:
       SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
       SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
@@ -66,7 +69,6 @@ jobs:
       - test
       - build-website
       - build-linux
-    if: ${{ github.ref == 'refs/heads/main' }}
     steps:
     - uses: actions/checkout@v2
     - name: Log into DockerHub

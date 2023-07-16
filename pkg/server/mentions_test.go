@@ -203,6 +203,12 @@ func TestRejectingMention(t *testing.T) {
 	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
 	require.Equal(t, http.StatusNotFound, w.Code)
 	requireMetricValue(t, context.Background(), srv, "webmentiond_mentions{status=\rejected\"}", 1)
+
+	// If no ID is provided, return a 400 as the request is invalid:
+	r = httptest.NewRequest(http.MethodPost, "/manage/mentions//reject", nil)
+	w = httptest.NewRecorder()
+	srv.ServeHTTP(w, r.WithContext(server.AuthorizeContext(r.Context())))
+	require.Equal(t, http.StatusBadRequest, w.Code)
 }
 
 func TestDeletingMention(t *testing.T) {
