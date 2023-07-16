@@ -111,7 +111,7 @@ func TestReceiver(t *testing.T) {
 			if !exists {
 				http.Error(w, "Gone", http.StatusGone)
 			} else {
-				fmt.Fprintf(w, "<html><title>%s</title><body><a href=\"https://target.zerokspot.com\">target</a></body></html>", title)
+				fmt.Fprintf(w, "<html><head><title>%s</title></head><body><a href=\"https://target.zerokspot.com\">target</a></body></html>", title)
 			}
 		}))
 		w = httptest.NewRecorder()
