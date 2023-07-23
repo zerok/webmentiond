@@ -27,7 +27,7 @@ func main() {
 	pflag.BoolVar(&doWebsite, "website", false, "Build the website")
 	pflag.Parse()
 
-	dc, err := dagger.Connect(ctx)
+	dc, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
 	if err != nil {
 		logger.Fatal().Err(err).Msgf("Failed to connect to Dagger Engine")
 	}
