@@ -38,6 +38,7 @@ func main() {
 	defer dc.Close()
 
 	// Register all the environment variables that we'll need throughout the run:
+	commitID := requireEnv(ctx, "GIT_COMMIT_ID", doBuild)
 	awsS3BucketSecret := dc.SetSecret("AWS_S3_BUCKET", requireEnv(ctx, "AWS_S3_BUCKET", doBuild && doPublish))
 	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", requireEnv(ctx, "AWS_ACCESS_KEY_ID", doBuild && doPublish))
 	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", requireEnv(ctx, "AWS_SECRET_ACCESS_KEY", doBuild && doPublish))
@@ -59,6 +60,7 @@ func main() {
 
 	if doBuild {
 		if err := runBuildPackages(ctx, dc, buildPackageOptions{
+			commitID:           commitID,
 			srcDir:             srcDir,
 			goCache:            goCache,
 			nodeCache:          nodeCache,

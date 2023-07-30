@@ -2,13 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"os"
 
 	"dagger.io/dagger"
 )
 
 type buildPackageOptions struct {
+	commitID           string
 	awsS3Bucket        *dagger.Secret
 	awsS3Endpoint      *dagger.Secret
 	awsAccessKeyID     *dagger.Secret
@@ -36,10 +35,6 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		WithDirectory("/src/frontend", nodeContainer.Directory("/src/frontend")).
 		WithExec([]string{"release", "--snapshot", "--skip-before"})
 
-	commitID := os.Getenv("GIT_COMMIT_ID")
-	if commitID == "" {
-		return fmt.Errorf("no GIT_COMMIT_ID set")
-	}
 	dockerImageTag := "zerok/webmentiond:latest"
 
 	dockerContainer := dc.Container(dagger.ContainerOpts{
@@ -68,13 +63,13 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithEntrypoint(nil).
 			WithSecretVariable("AWS_S3_BUCKET", opts.awsS3Bucket).
 			WithSecretVariable("AWS_S3_ENDPOINT", opts.awsS3Endpoint).
-			WithEnvVariable("GIT_COMMIT_ID", commitID).
+			WithEnvVariable("GIT_COMMIT_ID", opts.commitID).
 			WithSecretVariable("AWS_ACCESS_KEY_ID", opts.awsAccessKeyID).
 			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
 			WithEnvVariable("AWS_REGION", "").
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
-			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/snapshots/${GIT_COMMIT_ID} --endpoint-url ${AWS_S3_ENDPOINT} --debug`}).
+			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/snapshots/${GIT_COMMIT_ID} --endpoint-url ${AWS_S3_ENDPOINT}`}).
 			ExitCode(ctx)
 		return err
 	} else {
