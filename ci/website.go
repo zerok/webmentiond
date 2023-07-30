@@ -17,7 +17,9 @@ func runBuildWebsite(ctx context.Context, dc *dagger.Client, opts buildWebsiteOp
 	if opts.publish {
 		_, err := dc.Container().From(alpineImage).
 			WithExec([]string{"apk", "add", "--no-cache", "rsync", "openssh"}).
-			WithMountedSecret("/root/.ssh/id_rsa", opts.sshPrivateKey).
+			WithMountedSecret("/tmp/id_rsa", opts.sshPrivateKey).
+			WithExec([]string{"mkdir", "-p", "/root/.ssh"}).
+			WithExec([]string{"cp", "/tmp/id_rsa", "/root/.ssh/id_rsa"}).
 			WithExec([]string{"chmod", "0600", "/root/.ssh/id_rsa"}).
 			WithDirectory("/src", container.Directory("/data/site")).
 			WithWorkdir("/src").
