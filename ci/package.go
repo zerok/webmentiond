@@ -40,7 +40,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 	if commitID == "" {
 		return fmt.Errorf("no GIT_COMMIT_ID set")
 	}
-	syncURL := fmt.Sprintf("s3://%s/releases/webmentiond/snapshots/%s", os.Getenv("AWS_S3_BUCKET"), commitID)
+	syncURL := fmt.Sprintf("s3://%s/releases/webmentiond/snapshots/%s", opts.awsS3Bucket, commitID)
 	dockerImageTag := "zerok/webmentiond:latest"
 
 	dockerContainer := dc.Container(dagger.ContainerOpts{
