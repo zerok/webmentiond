@@ -11,7 +11,9 @@ import (
 
 var goImage = "golang:1.20.6-alpine"
 var nodeImage = "node:18-alpine"
+var alpineImage = "alpine:3.18"
 var mailhogImage = "mailhog/mailhog:latest"
+var awsCLIImage = "amazon/aws-cli:2.13.3"
 
 func main() {
 	ctx := context.Background()
@@ -21,10 +23,12 @@ func main() {
 	var doBuild bool
 	var doTest bool
 	var doWebsite bool
+	var doPublish bool
 
 	pflag.BoolVar(&doBuild, "build", false, "Generate binary package")
 	pflag.BoolVar(&doTest, "test", false, "Execute tests")
 	pflag.BoolVar(&doWebsite, "website", false, "Build the website")
+	pflag.BoolVar(&doPublish, "publish", false, "Publish the generated packages and website")
 	pflag.Parse()
 
 	dc, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
@@ -33,11 +37,17 @@ func main() {
 	}
 	defer dc.Close()
 
+	// Register all the environment variables that we'll need throughout the run:
+	awsS3BucketSecret := dc.SetSecret("AWS_S3_BUCKET", os.Getenv("AWS_S3_BUCKET"))
+	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", os.Getenv("AWS_ACCESS_KEY_ID"))
+	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", os.Getenv("AWS_SECRET_ACCESS_KEY"))
+	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", os.Getenv("SSH_PRIVATE_KEY"))
+
 	goCache := dc.CacheVolume("go-cache")
 	nodeCache := dc.CacheVolume("node-cache")
 
 	srcDir := dc.Host().Directory(".", dagger.HostDirectoryOpts{
-		Exclude: []string{"frontend/node_modules", "bin", "data", ".git", ".github"},
+		Exclude: []string{"frontend/node_modules", "bin", "data", ".github", "dist"},
 	})
 
 	if doTest {
@@ -47,13 +57,25 @@ func main() {
 	}
 
 	if doBuild {
-		if err := runBuildPackages(ctx, dc, srcDir, goCache, nodeCache); err != nil {
+		if err := runBuildPackages(ctx, dc, buildPackageOptions{
+			srcDir:             srcDir,
+			goCache:            goCache,
+			nodeCache:          nodeCache,
+			awsS3Bucket:        awsS3BucketSecret,
+			awsAccessKeyID:     awsAccessKeyIDSecret,
+			awsSecretAccessKey: awsSecretAccessKeySecret,
+			publish:            doPublish,
+		}); err != nil {
 			logger.Fatal().Err(err).Msg("Package building failed")
 		}
 	}
 
 	if doWebsite {
-		if err := runBuildWebsite(ctx, dc, srcDir); err != nil {
+		if err := runBuildWebsite(ctx, dc, buildWebsiteOptions{
+			srcDir:        srcDir,
+			publish:       doPublish,
+			sshPrivateKey: sshPrivateKeySecret,
+		}); err != nil {
 			logger.Fatal().Err(err).Msg("Website building failed")
 		}
 	}
