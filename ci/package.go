@@ -9,7 +9,8 @@ import (
 )
 
 type buildPackageOptions struct {
-	awsS3Bucket        *dagger.Secret
+	awsS3Bucket        string
+	awsS3Endpoint      string
 	awsAccessKeyID     *dagger.Secret
 	awsSecretAccessKey *dagger.Secret
 	publish            bool
@@ -65,12 +66,11 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		}
 		_, err := dc.Container().
 			From(awsCLIImage).
-			WithSecretVariable("AWS_S3_BUCKET", opts.awsS3Bucket).
 			WithSecretVariable("AWS_ACCESS_KEY_ID", opts.awsAccessKeyID).
 			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
-			WithExec([]string{"s3", "sync", ".", syncURL, "--endpoint-url", "https://ams3.digitaloceanspaces.com"}).
+			WithExec([]string{"s3", "sync", ".", syncURL, "--endpoint-url", opts.awsS3Endpoint}).
 			ExitCode(ctx)
 		return err
 	} else {

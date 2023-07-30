@@ -38,9 +38,10 @@ func main() {
 	defer dc.Close()
 
 	// Register all the environment variables that we'll need throughout the run:
-	awsS3BucketSecret := dc.SetSecret("AWS_S3_BUCKET", os.Getenv("AWS_S3_BUCKET"))
+	awsS3BucketSecret := os.Getenv("AWS_S3_BUCKET")
 	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", os.Getenv("AWS_ACCESS_KEY_ID"))
 	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", os.Getenv("AWS_SECRET_ACCESS_KEY"))
+	awsS3Endpoint := os.Getenv("AWS_S3_ENDPOINT")
 	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", os.Getenv("SSH_PRIVATE_KEY"))
 
 	goCache := dc.CacheVolume("go-cache")
@@ -62,6 +63,7 @@ func main() {
 			goCache:            goCache,
 			nodeCache:          nodeCache,
 			awsS3Bucket:        awsS3BucketSecret,
+			awsS3Endpoint:      awsS3Endpoint,
 			awsAccessKeyID:     awsAccessKeyIDSecret,
 			awsSecretAccessKey: awsSecretAccessKeySecret,
 			publish:            doPublish,
