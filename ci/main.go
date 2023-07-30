@@ -38,11 +38,11 @@ func main() {
 	defer dc.Close()
 
 	// Register all the environment variables that we'll need throughout the run:
-	awsS3BucketSecret := os.Getenv("AWS_S3_BUCKET")
-	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", os.Getenv("AWS_ACCESS_KEY_ID"))
-	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", os.Getenv("AWS_SECRET_ACCESS_KEY"))
-	awsS3Endpoint := os.Getenv("AWS_S3_ENDPOINT")
-	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", os.Getenv("SSH_PRIVATE_KEY"))
+	awsS3BucketSecret := requireEnv(ctx, "AWS_S3_BUCKET", doBuild && doPublish)
+	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", requireEnv(ctx, "AWS_ACCESS_KEY_ID", doBuild && doPublish))
+	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", requireEnv(ctx, "AWS_SECRET_ACCESS_KEY", doBuild && doPublish))
+	awsS3Endpoint := requireEnv(ctx, "AWS_S3_ENDPOINT", doBuild && doPublish)
+	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", requireEnv(ctx, "SSH_PRIVATE_KEY", doWebsite && doPublish))
 
 	goCache := dc.CacheVolume("go-cache")
 	nodeCache := dc.CacheVolume("node-cache")
@@ -119,4 +119,13 @@ func getNodeContainer(ctx context.Context, dc *dagger.Client, opts nodeContainer
 		container = container.WithMountedCache("/src/frontend/node_modules", opts.cache)
 	}
 	return container
+}
+
+func requireEnv(ctx context.Context, name string, conditional bool) string {
+	logger := zerolog.Ctx(ctx)
+	val := os.Getenv(name)
+	if conditional && val == "" {
+		logger.Fatal().Msgf("%s not set", name)
+	}
+	return val
 }
