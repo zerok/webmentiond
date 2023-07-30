@@ -70,7 +70,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
-			WithExec([]string{"s3", "sync", ".", syncURL, "--endpoint-url", opts.awsS3Endpoint}).
+			WithExec([]string{"s3", "sync", ".", syncURL, "--endpoint-url", opts.awsS3Endpoint, "--debug"}).
 			ExitCode(ctx)
 		return err
 	} else {
