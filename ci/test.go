@@ -9,14 +9,14 @@ import (
 )
 
 func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, goCache *dagger.CacheVolume, nodeCache *dagger.CacheVolume) error {
-	mailhogService := dc.Container().From(mailhogImage).WithExposedPort(1025).WithExposedPort(8025)
-	mailhogSMTPAddr, err := mailhogService.Endpoint(ctx, dagger.ContainerEndpointOpts{
+	mailpitService := dc.Container().From(mailpitImage).WithExposedPort(1025).WithExposedPort(8025)
+	mailpitSMTPAddr, err := mailpitService.Endpoint(ctx, dagger.ContainerEndpointOpts{
 		Port: 1025,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get mailhog SMTP addr: %w", err)
 	}
-	mailhogAPIAddr, err := mailhogService.Endpoint(ctx, dagger.ContainerEndpointOpts{
+	mailpitAPIAddr, err := mailpitService.Endpoint(ctx, dagger.ContainerEndpointOpts{
 		Port: 8025,
 	})
 	if err != nil {
@@ -27,9 +27,9 @@ func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, 
 		cache:  goCache,
 		srcDir: srcDir,
 	}).
-		WithServiceBinding("mailhog", mailhogService).
-		WithEnvVariable("MAILHOG_SMTP_ADDR", mailhogSMTPAddr).
-		WithEnvVariable("MAILHOG_API_ADDR", mailhogAPIAddr)
+		WithServiceBinding("mailpit", mailpitService).
+		WithEnvVariable("MAILPIT_SMTP_ADDR", mailpitSMTPAddr).
+		WithEnvVariable("MAILPIT_API_ADDR", mailpitAPIAddr)
 
 	nodeContainer := dc.Container(dagger.ContainerOpts{Platform: "linux/amd64"}).
 		From(nodeImage).

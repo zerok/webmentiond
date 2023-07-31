@@ -12,7 +12,7 @@ import (
 var goImage = "golang:1.20.6-alpine"
 var nodeImage = "node:18-alpine"
 var alpineImage = "alpine:3.18"
-var mailhogImage = "mailhog/mailhog:latest"
+var mailpitImage = "axllent/mailpit:v1.8"
 var awsCLIImage = "amazon/aws-cli:2.13.3"
 
 func main() {
