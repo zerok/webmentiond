@@ -28,7 +28,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		WithExec([]string{"yarn", "run", "webpack", "--mode", "production"})
 
 	goreleaserContainer := dc.Container().
-		From("goreleaser/goreleaser").
+		From(goreleaserImage).
 		WithMountedCache("/go/pkg", opts.goCache).
 		WithWorkdir("/src").
 		WithMountedDirectory("/src", opts.srcDir).

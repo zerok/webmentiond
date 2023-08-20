@@ -9,7 +9,8 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var goImage = "golang:1.20.6-alpine"
+var goImage = "golang:1.21.0-alpine"
+var goreleaserImage = "goreleaser/goreleaser:v1.21.0-nightly"
 var nodeImage = "node:18-alpine"
 var alpineImage = "alpine:3.18"
 var mailpitImage = "axllent/mailpit:v1.8"
