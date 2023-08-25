@@ -21,7 +21,7 @@ require (
 	go.opentelemetry.io/otel v1.16.0
 	golang.org/x/net v0.12.0
 	golang.org/x/sync v0.3.0
-	willnorris.com/go/microformats v1.1.1
+	willnorris.com/go/microformats v1.2.0
 )
 
 require (
