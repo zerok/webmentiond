@@ -70,7 +70,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
 			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/snapshots/${GIT_COMMIT_ID} --endpoint-url ${AWS_S3_ENDPOINT}`}).
-			ExitCode(ctx)
+			Sync(ctx)
 		return err
 	} else {
 		_, err := goreleaserContainer.Directory("/src/dist").Export(ctx, "./dist")

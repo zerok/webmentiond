@@ -42,7 +42,7 @@ func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, 
 	// Run backend tests
 	goContainer = goContainer.WithExec([]string{"go", "test", "-v", "./..."})
 	grp.Go(func() error {
-		_, err := goContainer.ExitCode(ctx)
+		_, err := goContainer.Sync(ctx)
 		return err
 	})
 
@@ -50,7 +50,7 @@ func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, 
 	nodeContainer = nodeContainer.WithExec([]string{"yarn"}).
 		WithExec([]string{"yarn", "run", "jest"})
 	grp.Go(func() error {
-		_, err := nodeContainer.ExitCode(ctx)
+		_, err := nodeContainer.Sync(ctx)
 		return err
 	})
 
