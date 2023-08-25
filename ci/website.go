@@ -21,10 +21,10 @@ func runBuildWebsite(ctx context.Context, dc *dagger.Client, opts buildWebsiteOp
 			WithDirectory("/src", container.Directory("/data/site")).
 			WithWorkdir("/src").
 			WithExec([]string{"rsync", "-e", "ssh -o StrictHostKeyChecking=no", "-avz", ".", "www-webmentiondorg@webmentiond.org:/srv/www/webmentiond.org/www/htdocs/"}).
-			ExitCode(ctx)
+			Sync(ctx)
 		return err
 	} else {
-		_, err := container.ExitCode(ctx)
+		_, err := container.Sync(ctx)
 		return err
 	}
 }
