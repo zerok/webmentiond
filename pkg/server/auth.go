@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/xid"
 )
 
@@ -126,13 +126,16 @@ func (srv *Server) handleAuthenticateWithAccessKey(w http.ResponseWriter, r *htt
 	}
 }
 
+type Claims struct {
+	jwt.RegisteredClaims
+}
+
 func (srv *Server) generateJWT(ctx context.Context, w http.ResponseWriter, subject string, ttl time.Duration) error {
-	exp := time.Now().Add(ttl).Unix()
-	claims := &jwt.StandardClaims{
-		Issuer:    "webmentiond",
-		Subject:   subject,
-		ExpiresAt: exp,
-	}
+	exp := time.Now().Add(ttl)
+	claims := &Claims{}
+	claims.Issuer = "webmentiond"
+	claims.Subject = subject
+	claims.ExpiresAt = jwt.NewNumericDate(exp)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	signedToken, err := token.SignedString([]byte(srv.cfg.Auth.JWTSecret))
 	if err != nil {

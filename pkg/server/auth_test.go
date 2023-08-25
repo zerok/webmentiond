@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/require"
 	"github.com/zerok/webmentiond/pkg/mailer"
@@ -49,6 +49,8 @@ func TestAccessKeyAuthentication(t *testing.T) {
 		require.NotNil(t, token)
 		claims, ok := token.Claims.(jwt.MapClaims)
 		require.True(t, ok)
+		require.Equal(t, "key:ci", claims["sub"])
+		require.Equal(t, "webmentiond", claims["iss"])
 		exp := time.Unix(int64(claims["exp"].(float64)), 0)
 		now := time.Now()
 		require.True(t, now.Before(exp), "token is not valid *now*")
