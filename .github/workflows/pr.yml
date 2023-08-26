@@ -8,10 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - uses: actions/setup-go@v4
       with:
         go-version: "1.21.0"
     - name: Run dagger
       env:
         GIT_COMMIT_ID: ${{ github.sha }}
+        RELEASE_VERSION: ""
       run: go run ./ci --test --build --website
