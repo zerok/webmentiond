@@ -70,6 +70,7 @@ func main() {
 			awsAccessKeyID:     awsAccessKeyIDSecret,
 			awsSecretAccessKey: awsSecretAccessKeySecret,
 			publish:            doPublish,
+			releaseVersion:     os.Getenv("RELEASE_VERSION"),
 		}); err != nil {
 			logger.Fatal().Err(err).Msg("Package building failed")
 		}

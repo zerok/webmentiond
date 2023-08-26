@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/rs/zerolog"
@@ -11,6 +12,11 @@ import (
 var logger zerolog.Logger
 var cfg *viper.Viper
 var configFilePath string
+var showVersion bool
+
+var version string
+var commit string
+var date string
 
 func newRootCmd() Command {
 	var verbose bool
@@ -31,8 +37,14 @@ func newRootCmd() Command {
 			if verbose {
 				logger = logger.Level(zerolog.DebugLevel)
 			}
+
+			if showVersion {
+				fmt.Printf("Version: %s (commit: %s, built on %s)\n", version, commit, date)
+				os.Exit(0)
+			}
 		},
 	}
+	rootCmd.PersistentFlags().BoolVar(&showVersion, "version", false, "Print version information")
 	rootCmd.PersistentFlags().StringVar(&configFilePath, "config-file", "", "Path to a configuration file")
 	rootCmd.PersistentFlags().BoolVar(&verbose, "verbose", false, "Verbose output")
 	cfg.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))

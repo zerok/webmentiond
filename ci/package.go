@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 
 	"dagger.io/dagger"
 )
@@ -16,6 +17,7 @@ type buildPackageOptions struct {
 	goCache            *dagger.CacheVolume
 	nodeCache          *dagger.CacheVolume
 	srcDir             *dagger.Directory
+	releaseVersion     string
 }
 
 func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageOptions) error {
@@ -32,10 +34,14 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		WithMountedCache("/go/pkg", opts.goCache).
 		WithWorkdir("/src").
 		WithMountedDirectory("/src", opts.srcDir).
-		WithDirectory("/src/frontend", nodeContainer.Directory("/src/frontend")).
-		WithExec([]string{"release", "--snapshot", "--skip-before"})
+		WithDirectory("/src/frontend", nodeContainer.Directory("/src/frontend"))
 
 	dockerImageTag := "zerok/webmentiond:latest"
+	if opts.releaseVersion != "" {
+		goreleaserContainer = goreleaserContainer.WithEnvVariable("RELEASE_VERSION", opts.releaseVersion)
+		dockerImageTag = fmt.Sprintf("zerok/webmentiond:%s", opts.releaseVersion)
+	}
+	goreleaserContainer = goreleaserContainer.WithExec([]string{"release", "--skip-before", "--skip-publish", "--skip-validate"})
 
 	dockerContainer := dc.Container(dagger.ContainerOpts{
 		Platform: "linux/amd64",
@@ -58,9 +64,16 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		if _, err := dockerContainer.Publish(ctx, dockerImageTag); err != nil {
 			return err
 		}
+		var releasePath string
+		if opts.releaseVersion != "" {
+			releasePath = opts.releaseVersion
+		} else {
+			releasePath = fmt.Sprintf("snapshots/%s", opts.commitID)
+		}
 		_, err := dc.Container().
 			From(awsCLIImage).
 			WithEntrypoint(nil).
+			WithEnvVariable("RELEASE_PATH", releasePath).
 			WithSecretVariable("AWS_S3_BUCKET", opts.awsS3Bucket).
 			WithSecretVariable("AWS_S3_ENDPOINT", opts.awsS3Endpoint).
 			WithEnvVariable("GIT_COMMIT_ID", opts.commitID).
@@ -69,7 +82,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithEnvVariable("AWS_REGION", "").
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
-			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/snapshots/${GIT_COMMIT_ID} --endpoint-url ${AWS_S3_ENDPOINT}`}).
+			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/${RELEASE_PATH} --endpoint-url ${AWS_S3_ENDPOINT}`}).
 			Sync(ctx)
 		return err
 	} else {
