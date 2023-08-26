@@ -7,7 +7,7 @@ builds:
     - CGO_ENABLED=1
     main: ./cmd/webmentiond
     ldflags:
-      - "-s -w -X main.version={{ if .Env.RELEASE_VERSION }}{{.Env.RELEASE_VERSION}}{{ else }}{{.Version}}{{ end }} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"
+      - "-s -w -X main.version={{ if index .Env \"RELEASE_VERSION\" }}{{.Env.RELEASE_VERSION}}{{ else }}{{.Version}}{{ end }} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser"
     goos:
       - linux
     goarch:
@@ -17,7 +17,7 @@ archives:
     builds:
       - default
     format: zip
-    name_template: "{{ .ProjectName }}_{{ if .Env.RELEASE_VERSION }}{{.Env.RELEASE_VERSION}}{{ else }}{{.Version}}{{ end }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .ProjectName }}_{{ if index .Env \"RELEASE_VERSION\" }}{{.Env.RELEASE_VERSION}}{{ else }}{{.Version}}{{ end }}_{{ .Os }}_{{ .Arch }}"
     files:
       - frontend/css/*
       - frontend/dist/*
