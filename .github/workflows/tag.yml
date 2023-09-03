@@ -6,7 +6,8 @@ on:
       - "v*"
 
 jobs:
-  main:
+  "tag-main":
+    name: "Tag"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
