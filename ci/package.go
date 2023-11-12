@@ -11,6 +11,7 @@ type buildPackageOptions struct {
 	commitID           string
 	awsS3Bucket        *dagger.Secret
 	awsS3Endpoint      *dagger.Secret
+	awsS3Region        *dagger.Secret
 	awsAccessKeyID     *dagger.Secret
 	awsSecretAccessKey *dagger.Secret
 	publish            bool
@@ -71,7 +72,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			releasePath = fmt.Sprintf("snapshots/%s", opts.commitID)
 		}
 		_, err := dc.Container().
-			From(awsCLIImage).
+			From(rcloneImage).
 			WithEntrypoint(nil).
 			WithEnvVariable("RELEASE_PATH", releasePath).
 			WithSecretVariable("AWS_S3_BUCKET", opts.awsS3Bucket).
@@ -79,9 +80,11 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithEnvVariable("GIT_COMMIT_ID", opts.commitID).
 			WithSecretVariable("AWS_ACCESS_KEY_ID", opts.awsAccessKeyID).
 			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
+			WithSecretVariable("AWS_S3_REGION", opts.awsS3Region).
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
-			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/${RELEASE_PATH} --endpoint-url ${AWS_S3_ENDPOINT}`}).
+			WithExec([]string{"sh", "-c", `rclone config create s3 s3 access_key_id=${AWS_ACCESS_KEY_ID} secret_access_key=${AWS_SECRET_ACCESS_KEY} endpoint=${AWS_S3_ENDPOINT} acl=public-read region=${AWS_S3_REGION} > /dev/null`}).
+			WithExec([]string{"sh", "-c", `rclone sync . s3:${AWS_S3_BUCKET}/releases/webmentiond/${RELEASE_PATH}`}).
 			Sync(ctx)
 		return err
 	} else {

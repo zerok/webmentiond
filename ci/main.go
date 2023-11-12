@@ -14,7 +14,7 @@ var goreleaserImage = "goreleaser/goreleaser:v1.21.0-nightly"
 var nodeImage = "node:18-alpine"
 var alpineImage = "alpine:3.18"
 var mailpitImage = "axllent/mailpit:v1.8"
-var awsCLIImage = "amazon/aws-cli:2.13.3"
+var rcloneImage = "rclone/rclone:1.64"
 
 func main() {
 	ctx := context.Background()
@@ -44,6 +44,7 @@ func main() {
 	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", requireEnv(ctx, "AWS_ACCESS_KEY_ID", doBuild && doPublish))
 	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", requireEnv(ctx, "AWS_SECRET_ACCESS_KEY", doBuild && doPublish))
 	awsS3EndpointSecret := dc.SetSecret("AWS_S3_ENDPOINT", requireEnv(ctx, "AWS_S3_ENDPOINT", doBuild && doPublish))
+	awsS3RegionSecret := dc.SetSecret("AWS_S3_REGION", requireEnv(ctx, "AWS_S3_REGION", doBuild && doPublish))
 	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", requireEnv(ctx, "SSH_PRIVATE_KEY", doWebsite && doPublish))
 
 	goCache := dc.CacheVolume("go-cache")
@@ -69,6 +70,7 @@ func main() {
 			awsS3Endpoint:      awsS3EndpointSecret,
 			awsAccessKeyID:     awsAccessKeyIDSecret,
 			awsSecretAccessKey: awsSecretAccessKeySecret,
+			awsS3Region:        awsS3RegionSecret,
 			publish:            doPublish,
 			releaseVersion:     os.Getenv("RELEASE_VERSION"),
 		}); err != nil {
