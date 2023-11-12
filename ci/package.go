@@ -79,7 +79,6 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			WithEnvVariable("GIT_COMMIT_ID", opts.commitID).
 			WithSecretVariable("AWS_ACCESS_KEY_ID", opts.awsAccessKeyID).
 			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
-			WithEnvVariable("AWS_REGION", "").
 			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
 			WithWorkdir("/src").
 			WithExec([]string{"sh", "-c", `aws s3 sync . s3://${AWS_S3_BUCKET}/releases/webmentiond/${RELEASE_PATH} --endpoint-url ${AWS_S3_ENDPOINT}`}).
