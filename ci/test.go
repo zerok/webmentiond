@@ -9,14 +9,14 @@ import (
 )
 
 func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, goCache *dagger.CacheVolume, nodeCache *dagger.CacheVolume) error {
-	mailpitService := dc.Container().From(mailpitImage).WithExposedPort(1025).WithExposedPort(8025)
-	mailpitSMTPAddr, err := mailpitService.Endpoint(ctx, dagger.ContainerEndpointOpts{
+	mailpitService := dc.Container().From(mailpitImage).WithExposedPort(1025).WithExposedPort(8025).AsService()
+	mailpitSMTPAddr, err := mailpitService.Endpoint(ctx, dagger.ServiceEndpointOpts{
 		Port: 1025,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to get mailhog SMTP addr: %w", err)
 	}
-	mailpitAPIAddr, err := mailpitService.Endpoint(ctx, dagger.ContainerEndpointOpts{
+	mailpitAPIAddr, err := mailpitService.Endpoint(ctx, dagger.ServiceEndpointOpts{
 		Port: 8025,
 	})
 	if err != nil {

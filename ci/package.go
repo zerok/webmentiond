@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"time"
 
 	"dagger.io/dagger"
 )
@@ -19,6 +21,8 @@ type buildPackageOptions struct {
 	nodeCache          *dagger.CacheVolume
 	srcDir             *dagger.Directory
 	releaseVersion     string
+	platforms          []string
+	imageName          string
 }
 
 func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageOptions) error {
@@ -30,65 +34,76 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		WithExec([]string{"yarn"}).
 		WithExec([]string{"yarn", "run", "webpack", "--mode", "production"})
 
-	goreleaserContainer := dc.Container().
-		From(goreleaserImage).
-		WithMountedCache("/go/pkg", opts.goCache).
-		WithWorkdir("/src").
-		WithMountedDirectory("/src", opts.srcDir).
-		WithDirectory("/src/frontend", nodeContainer.Directory("/src/frontend"))
+	// Now build the binary for all platforms
+	targetPlatforms := opts.platforms
+	buildContainers := map[string]*dagger.Container{}
 
-	dockerImageTag := "zerok/webmentiond:latest"
-	if opts.releaseVersion != "" {
-		goreleaserContainer = goreleaserContainer.WithEnvVariable("RELEASE_VERSION", opts.releaseVersion)
-		dockerImageTag = fmt.Sprintf("zerok/webmentiond:%s", opts.releaseVersion)
+	flags := bytes.Buffer{}
+	flags.WriteString("-X 'main.commit=")
+	flags.WriteString(opts.commitID)
+	flags.WriteString("'")
+	flags.WriteString(" -X 'main.version=")
+	flags.WriteString(opts.releaseVersion)
+	flags.WriteString("'")
+	flags.WriteString(" -X 'main.date=")
+	flags.WriteString(time.Now().Format(time.RFC3339))
+	flags.WriteString("'")
+
+	for _, platform := range targetPlatforms {
+		container := getGoContainer(ctx, dc, goContainerOptions{
+			cache:    opts.goCache,
+			platform: dagger.Platform(platform),
+			srcDir:   opts.srcDir,
+		}).
+			WithExec([]string{"go", "build", "-o", "webmentiond", "-ldflags", flags.String(), "./cmd/webmentiond"})
+		buildContainers[platform] = container
 	}
-	goreleaserContainer = goreleaserContainer.WithExec([]string{"release", "--skip-before", "--skip-publish", "--skip-validate"})
 
-	dockerContainer := dc.Container(dagger.ContainerOpts{
-		Platform: "linux/amd64",
-	}).
-		From(alpineImage).
-		WithExec([]string{"apk", "add", "--no-cache", "sqlite-dev"}).
-		WithExec([]string{"adduser", "-u", "1500", "-h", "/data", "-H", "-D", "webmentiond"}).
-		WithExec([]string{"mkdir", "-p", "/var/lib/webmentiond/frontend"}).
-		WithDirectory("/var/lib/webmentiond/migrations", opts.srcDir.Directory("pkg/server/migrations")).
-		WithDirectory("/var/lib/webmentiond/frontend/dist", nodeContainer.Directory("/src/frontend/dist")).
-		WithDirectory("/var/lib/webmentiond/frontend/css", nodeContainer.Directory("/src/frontend/css")).
-		WithFile("/var/lib/webmentiond/frontend/index.html", nodeContainer.File("/src/frontend/index.html")).
-		WithFile("/var/lib/webmentiond/frontend/demo.html", nodeContainer.File("/src/frontend/demo.html")).
-		WithFile("/usr/local/bin/webmentiond", goreleaserContainer.File("/src/dist/default_linux_amd64_v1/webmentiond")).
-		WithUser("webmentiond").
-		WithWorkdir("/var/lib/webmentiond").
-		WithEntrypoint([]string{"/usr/local/bin/webmentiond", "serve", "--database-migrations", "/var/lib/webmentiond/migrations", "--database", "/data/webmentiond.sqlite"})
+	// These now need to used in the target containers that are eventually
+	// published:
+	variants := make([]*dagger.Container, 0, len(targetPlatforms))
+	for platform, buildContainer := range buildContainers {
+		dockerContainer := dc.Container(dagger.ContainerOpts{
+			Platform: dagger.Platform(platform),
+		}).
+			From(alpineImage).
+			WithExec([]string{"apk", "add", "--no-cache", "sqlite-dev"}).
+			WithExec([]string{"adduser", "-u", "1500", "-h", "/data", "-H", "-D", "webmentiond"}).
+			WithExec([]string{"mkdir", "-p", "/var/lib/webmentiond/frontend"}).
+			WithDirectory("/var/lib/webmentiond/migrations", opts.srcDir.Directory("pkg/server/migrations")).
+			WithDirectory("/var/lib/webmentiond/frontend/dist", nodeContainer.Directory("/src/frontend/dist")).
+			WithDirectory("/var/lib/webmentiond/frontend/css", nodeContainer.Directory("/src/frontend/css")).
+			WithFile("/var/lib/webmentiond/frontend/index.html", nodeContainer.File("/src/frontend/index.html")).
+			WithFile("/var/lib/webmentiond/frontend/demo.html", nodeContainer.File("/src/frontend/demo.html")).
+			WithFile("/usr/local/bin/webmentiond", buildContainer.File("/src/webmentiond")).
+			WithUser("webmentiond").
+			WithWorkdir("/var/lib/webmentiond").
+			WithEntrypoint([]string{"/usr/local/bin/webmentiond", "serve", "--database-migrations", "/var/lib/webmentiond/migrations", "--database", "/data/webmentiond.sqlite"})
+		variants = append(variants, dockerContainer)
+	}
+
+	imageName := opts.imageName
+	imageTag := "main-" + opts.commitID
+	if opts.releaseVersion != "" {
+		imageTag = opts.releaseVersion
+	}
+	fullImageName := fmt.Sprintf("%s:%s", imageName, imageTag)
 
 	if opts.publish {
-		if _, err := dockerContainer.Publish(ctx, dockerImageTag); err != nil {
-			return err
-		}
-		var releasePath string
-		if opts.releaseVersion != "" {
-			releasePath = opts.releaseVersion
-		} else {
-			releasePath = fmt.Sprintf("snapshots/%s", opts.commitID)
-		}
-		_, err := dc.Container().
-			From(rcloneImage).
-			WithEntrypoint(nil).
-			WithEnvVariable("RELEASE_PATH", releasePath).
-			WithSecretVariable("AWS_S3_BUCKET", opts.awsS3Bucket).
-			WithSecretVariable("AWS_S3_ENDPOINT", opts.awsS3Endpoint).
-			WithEnvVariable("GIT_COMMIT_ID", opts.commitID).
-			WithSecretVariable("AWS_ACCESS_KEY_ID", opts.awsAccessKeyID).
-			WithSecretVariable("AWS_SECRET_ACCESS_KEY", opts.awsSecretAccessKey).
-			WithSecretVariable("AWS_S3_REGION", opts.awsS3Region).
-			WithDirectory("/src", goreleaserContainer.Directory("/src/dist")).
-			WithWorkdir("/src").
-			WithExec([]string{"sh", "-c", `rclone config create s3 s3 access_key_id=${AWS_ACCESS_KEY_ID} secret_access_key=${AWS_SECRET_ACCESS_KEY} endpoint=${AWS_S3_ENDPOINT} acl=public-read region=${AWS_S3_REGION} > /dev/null`}).
-			WithExec([]string{"sh", "-c", `rclone sync . s3:${AWS_S3_BUCKET}/releases/webmentiond/${RELEASE_PATH}`}).
-			Sync(ctx)
-		return err
-	} else {
-		_, err := goreleaserContainer.Directory("/src/dist").Export(ctx, "./dist")
+		_, err := dc.Container().Publish(ctx, fullImageName, dagger.ContainerPublishOpts{
+			PlatformVariants: variants,
+		})
 		return err
 	}
+
+	// If there is no publishing, then we should at least build the images
+	for _, variant := range variants {
+		_, err := variant.Sync(ctx)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TODO: build tarballs
+	return nil
 }

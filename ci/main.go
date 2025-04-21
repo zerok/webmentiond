@@ -9,10 +9,11 @@ import (
 	"github.com/spf13/pflag"
 )
 
-var goImage = "golang:1.21.0-alpine"
+// TODO: Read this image from an external source
+var goImage = "golang:1.24.2-alpine"
 var goreleaserImage = "goreleaser/goreleaser:v1.21.0-nightly"
 var nodeImage = "node:18-alpine"
-var alpineImage = "alpine:3.18"
+var alpineImage = "alpine:3.21"
 var mailpitImage = "axllent/mailpit:v1.8"
 var rcloneImage = "rclone/rclone:1.64"
 
@@ -25,11 +26,13 @@ func main() {
 	var doTest bool
 	var doWebsite bool
 	var doPublish bool
+	var platforms []string
 
 	pflag.BoolVar(&doBuild, "build", false, "Generate binary package")
 	pflag.BoolVar(&doTest, "test", false, "Execute tests")
 	pflag.BoolVar(&doWebsite, "website", false, "Build the website")
 	pflag.BoolVar(&doPublish, "publish", false, "Publish the generated packages and website")
+	pflag.StringSliceVar(&platforms, "platform", []string{"linux/amd64", "linux/arm64"}, "Platforms to generate output for")
 	pflag.Parse()
 
 	dc, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
@@ -40,11 +43,6 @@ func main() {
 
 	// Register all the environment variables that we'll need throughout the run:
 	commitID := requireEnv(ctx, "GIT_COMMIT_ID", doBuild)
-	awsS3BucketSecret := dc.SetSecret("AWS_S3_BUCKET", requireEnv(ctx, "AWS_S3_BUCKET", doBuild && doPublish))
-	awsAccessKeyIDSecret := dc.SetSecret("AWS_ACCESS_KEY_ID", requireEnv(ctx, "AWS_ACCESS_KEY_ID", doBuild && doPublish))
-	awsSecretAccessKeySecret := dc.SetSecret("AWS_SECRET_ACCESS_KEY", requireEnv(ctx, "AWS_SECRET_ACCESS_KEY", doBuild && doPublish))
-	awsS3EndpointSecret := dc.SetSecret("AWS_S3_ENDPOINT", requireEnv(ctx, "AWS_S3_ENDPOINT", doBuild && doPublish))
-	awsS3RegionSecret := dc.SetSecret("AWS_S3_REGION", requireEnv(ctx, "AWS_S3_REGION", doBuild && doPublish))
 	sshPrivateKeySecret := dc.SetSecret("SSH_PRIVATE_KEY", requireEnv(ctx, "SSH_PRIVATE_KEY", doWebsite && doPublish))
 
 	goCache := dc.CacheVolume("go-cache")
@@ -62,17 +60,14 @@ func main() {
 
 	if doBuild {
 		if err := runBuildPackages(ctx, dc, buildPackageOptions{
-			commitID:           commitID,
-			srcDir:             srcDir,
-			goCache:            goCache,
-			nodeCache:          nodeCache,
-			awsS3Bucket:        awsS3BucketSecret,
-			awsS3Endpoint:      awsS3EndpointSecret,
-			awsAccessKeyID:     awsAccessKeyIDSecret,
-			awsSecretAccessKey: awsSecretAccessKeySecret,
-			awsS3Region:        awsS3RegionSecret,
-			publish:            doPublish,
-			releaseVersion:     os.Getenv("RELEASE_VERSION"),
+			commitID:       commitID,
+			srcDir:         srcDir,
+			goCache:        goCache,
+			nodeCache:      nodeCache,
+			publish:        doPublish,
+			releaseVersion: os.Getenv("RELEASE_VERSION"),
+			platforms:      platforms,
+			imageName:      os.Getenv("IMAGE_NAME"),
 		}); err != nil {
 			logger.Fatal().Err(err).Msg("Package building failed")
 		}
