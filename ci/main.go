@@ -11,7 +11,6 @@ import (
 
 // TODO: Read this image from an external source
 var goImage = "golang:1.24.2-alpine"
-var goreleaserImage = "goreleaser/goreleaser:v1.21.0-nightly"
 var nodeImage = "node:18-alpine"
 var alpineImage = "alpine:3.21"
 var mailpitImage = "axllent/mailpit:v1.8"
