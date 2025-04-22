@@ -26,7 +26,7 @@ type buildPackageOptions struct {
 }
 
 func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageOptions) error {
-	// First we build the frontend code which we can then mount into goreleaser:
+	// First we build the frontend code which we can then mount into the final images:
 	nodeContainer := getNodeContainer(ctx, dc, nodeContainerOptions{
 		cache:  opts.nodeCache,
 		srcDir: opts.srcDir,
@@ -104,6 +104,5 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		}
 	}
 
-	// TODO: build tarballs
 	return nil
 }

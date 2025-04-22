@@ -12,7 +12,6 @@ nav:
   - Reference:
       - "configuration.md"
   - Guides:
-      - "install-from-archive.md"
       - "install-from-source.md"
       - "fontawesome.md"
       - "policies.md"
