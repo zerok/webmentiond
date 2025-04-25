@@ -5,7 +5,7 @@ COPY . /src
 WORKDIR /src/cmd/webmentiond
 RUN go build --tags "libsqlite3 linux"
 
-FROM node:18-alpine3.18 AS nodebuilder
+FROM node:22-alpine3.18 AS nodebuilder
 COPY frontend /src/frontend
 WORKDIR /src/frontend
 RUN yarn && yarn run webpack --mode production
