@@ -10,7 +10,7 @@ COPY frontend /src/frontend
 WORKDIR /src/frontend
 RUN yarn && yarn run webpack --mode production
 
-FROM alpine:3.21
+FROM alpine:3.22
 RUN apk add --no-cache sqlite-dev
 VOLUME ["/data"]
 RUN adduser -u 1500 -h /data -H -D webmentiond && \
