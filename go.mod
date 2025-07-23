@@ -16,7 +16,7 @@ require (
 	github.com/rs/xid v1.6.0
 	github.com/rs/zerolog v1.34.0
 	github.com/spf13/cobra v1.9.1
-	github.com/spf13/pflag v1.0.6
+	github.com/spf13/pflag v1.0.7
 	github.com/spf13/viper v1.20.1
 	github.com/stretchr/testify v1.10.0
 	github.com/testcontainers/testcontainers-go v0.37.0
