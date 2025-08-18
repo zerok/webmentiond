@@ -1,5 +1,5 @@
 # WARNING: At this point this file is no longer maintained. The Docker image is built within ci/package.go!
-FROM golang:1.24-alpine AS gobuilder
+FROM golang:1.25-alpine AS gobuilder
 RUN apk add --no-cache gcc libc-dev git sqlite-dev
 COPY . /src
 WORKDIR /src/cmd/webmentiond
