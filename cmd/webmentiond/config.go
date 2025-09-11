@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -82,5 +83,5 @@ func (fs *failState) FailFor(field string, env string, flag string) {
 		msg += fmt.Sprintf(" or the %s flag", flag)
 	}
 	msg += "."
-	fs.Fail(fmt.Errorf(msg))
+	fs.Fail(errors.New(msg))
 }
