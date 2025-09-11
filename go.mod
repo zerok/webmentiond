@@ -1,8 +1,8 @@
 module github.com/zerok/webmentiond
 
-go 1.23.0
+go 1.24.0
 
-toolchain go1.24.2
+toolchain go1.25.1
 
 require (
 	dagger.io/dagger v0.18.16
@@ -21,7 +21,7 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.38.0
 	golang.org/x/net v0.43.0
-	golang.org/x/sync v0.16.0
+	golang.org/x/sync v0.17.0
 	willnorris.com/go/microformats v1.2.0
 )
 
