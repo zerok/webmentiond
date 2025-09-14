@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"database/sql"
+	"io/fs"
 	"net/http"
 	"strings"
 	"time"
@@ -69,7 +70,7 @@ type Configuration struct {
 	Mailer                      mailer.Mailer
 	AllowedOrigins              []string
 	PublicURL                   string
-	UIPath                      string
+	UIFileSystem                fs.FS
 	VerificationTimeoutDuration time.Duration
 	VerificationMaxRedirects    int
 	NotifyOnVerification        bool

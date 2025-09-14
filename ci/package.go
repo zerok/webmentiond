@@ -55,6 +55,7 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 			platform: dagger.Platform(platform),
 			srcDir:   opts.srcDir,
 		}).
+			WithDirectory("./frontend", nodeContainer.Directory(".")).
 			WithExec([]string{"go", "build", "-o", "webmentiond", "-ldflags", flags.String(), "./cmd/webmentiond"})
 		buildContainers[platform] = container
 	}
