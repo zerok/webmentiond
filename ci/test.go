@@ -29,7 +29,13 @@ func runTests(ctx context.Context, dc *dagger.Client, srcDir *dagger.Directory, 
 	}).
 		WithServiceBinding("mailpit", mailpitService).
 		WithEnvVariable("MAILPIT_SMTP_ADDR", mailpitSMTPAddr).
-		WithEnvVariable("MAILPIT_API_ADDR", mailpitAPIAddr)
+		WithEnvVariable("MAILPIT_API_ADDR", mailpitAPIAddr).
+		WithExec([]string{"mkdir", "-p", "frontend/css"}).
+		WithExec([]string{"mkdir", "-p", "frontend/dist"}).
+		WithExec([]string{"touch", "frontend/index.html"}).
+		WithExec([]string{"touch", "frontend/demo.html"}).
+		WithExec([]string{"touch", "frontend/dist/empty"}).
+		WithExec([]string{"touch", "frontend/css/empty"})
 
 	nodeContainer := dc.Container(dagger.ContainerOpts{Platform: "linux/amd64"}).
 		From(nodeImage).

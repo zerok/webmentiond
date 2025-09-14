@@ -61,10 +61,9 @@ func New(configurators ...Configurator) *Server {
 			})
 		})
 	}
-	logger.Info().Msgf("UI path served from %s", cfg.UIPath)
 	srv.router.Get("/", srv.handleIndex)
 	srv.router.Get("/ui/*", func(w http.ResponseWriter, r *http.Request) {
-		http.StripPrefix("/ui", http.FileServer(http.Dir(cfg.UIPath))).ServeHTTP(w, r)
+		http.StripPrefix("/ui", http.FileServer(http.FS(cfg.UIFileSystem))).ServeHTTP(w, r)
 	})
 	if cfg.ExposeMetrics {
 		logger.Info().Msgf("Exposing metrics through normal HTTP endpoint")

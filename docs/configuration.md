@@ -42,7 +42,7 @@ as the source repository contain a folder called `frontend` that contains this
 UI. Webmentiond has to know where this folder is located on your system in
 order to present it to you.
 
-Default: `./frontend`
+Default: `` (using the embedded UI)
 
 
 ## Database settings
