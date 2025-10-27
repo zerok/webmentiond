@@ -1,5 +1,14 @@
 # Changes
 
+## [1.2.1](https://github.com/zerok/webmentiond/compare/v1.2.0...v1.2.1) (2025-10-27)
+
+
+### 🏗️ Build System
+
+* **deps:** bump dagger.io/dagger from 0.18.19 to 0.19.2 ([#207](https://github.com/zerok/webmentiond/issues/207)) ([b4b5123](https://github.com/zerok/webmentiond/commit/b4b512361b44c99e28ab1370f4eb2548c40378c5))
+* **deps:** bump golang.org/x/net from 0.44.0 to 0.46.0 ([#208](https://github.com/zerok/webmentiond/issues/208)) ([f8c5b4d](https://github.com/zerok/webmentiond/commit/f8c5b4dceae2869be25c3d5f6cf22531015d7ae1))
+* **deps:** bump googleapis/release-please-action from 4.3.0 to 4.4.0 ([#211](https://github.com/zerok/webmentiond/issues/211)) ([1ae5150](https://github.com/zerok/webmentiond/commit/1ae5150602c998acec1ceced6d5ee7478408c962))
+
 ## [1.2.0](https://github.com/zerok/webmentiond/compare/v1.1.1...v1.2.0) (2025-10-11)
 
 
