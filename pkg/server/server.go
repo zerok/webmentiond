@@ -15,10 +15,13 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/golang-migrate/migrate/v4"
 	migrateDriver "github.com/golang-migrate/migrate/v4/database/sqlite3"
+	"github.com/golang-migrate/migrate/v4/source"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	iofs "github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/zerok/webmentiond/pkg/mailer"
+	"github.com/zerok/webmentiond/pkg/server/migrations"
 )
 
 // Server implements the http.Handler interface and deals with
@@ -126,9 +129,19 @@ func (srv *Server) MigrateDatabase(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to create sqlite3 driver for running migrations: %w", err)
 	}
-	m, err := migrate.NewWithDatabaseInstance(
-		"file://"+srv.cfg.MigrationsFolder,
-		"sqlite3", driver)
+	var m *migrate.Migrate
+	if srv.cfg.MigrationsFolder != "" {
+		m, err = migrate.NewWithDatabaseInstance(
+			"file://"+srv.cfg.MigrationsFolder,
+			"sqlite3", driver)
+	} else {
+		var embeddedMigrations source.Driver
+		embeddedMigrations, err = iofs.New(migrations.FS, ".")
+		if err != nil {
+			return err
+		}
+		m, err = migrate.NewWithInstance("iofs", embeddedMigrations, "sqlite3", driver)
+	}
 	if err != nil {
 		return fmt.Errorf("failed to prepare migrations: %w", err)
 	}
