@@ -96,9 +96,11 @@ func newServeCmd() Command {
 				return fmt.Errorf("no database specified")
 			}
 			migrationsFolder := cfg.GetString("database.migrations")
-			migrationsFolder, err = filepath.Abs(migrationsFolder)
-			if err != nil {
-				return err
+			if migrationsFolder != "" {
+				migrationsFolder, err = filepath.Abs(migrationsFolder)
+				if err != nil {
+					return err
+				}
 			}
 			authAdminEmails := cfg.GetStringSlice("server.auth_admin_emails")
 			authJWTSecret := cfg.GetString("server.auth_jwt_secret")
@@ -200,7 +202,7 @@ func newServeCmd() Command {
 
 	serveCmd.Flags().String("database", "./webmentiond.sqlite", "Path to a SQLite database file")
 	cfg.BindPFlag("database.path", serveCmd.Flags().Lookup("database"))
-	serveCmd.Flags().String("database-migrations", "./pkg/server/migrations", "Path to the database migrations")
+	serveCmd.Flags().String("database-migrations", "", "Path to the database migrations")
 	cfg.BindPFlag("database.migrations", serveCmd.Flags().Lookup("database-migrations"))
 
 	serveCmd.Flags().String("addr", "127.0.0.1:8080", "Address to listen on for HTTP requests")
