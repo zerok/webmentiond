@@ -14,11 +14,10 @@ import (
 )
 
 // TODO: Read this image from an external source
-var goImage = "golang:1.24.2-alpine"
+var goImage = "golang:1.25.4-alpine"
 var nodeImage = "node:18-alpine"
-var alpineImage = "alpine:3.21"
+var alpineImage = "alpine:3.22"
 var mailpitImage = "axllent/mailpit:v1.8"
-var rcloneImage = "rclone/rclone:1.64"
 
 func main() {
 	ctx := context.Background()
