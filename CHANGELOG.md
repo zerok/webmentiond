@@ -1,5 +1,35 @@
 # Changes
 
+## [1.3.0-rc1](https://github.com/zerok/webmentiond/compare/v1.2.0...v1.3.0-rc1) (2025-12-01)
+
+
+### 🎉 Features
+
+* embed migrations ([#221](https://github.com/zerok/webmentiond/issues/221)) ([c0bcaa0](https://github.com/zerok/webmentiond/commit/c0bcaa060bbbf5c309f319250d4e2ae58da7b294))
+
+
+### 🏗️ Build System
+
+* **deps:** bump actions/checkout from 5.0.0 to 6.0.0 ([#224](https://github.com/zerok/webmentiond/issues/224)) ([2fe7d68](https://github.com/zerok/webmentiond/commit/2fe7d6878e432cc7747b15fde1ab20955ce66e31))
+* **deps:** bump actions/setup-go from 6.0.0 to 6.1.0 ([#223](https://github.com/zerok/webmentiond/issues/223)) ([44e4b15](https://github.com/zerok/webmentiond/commit/44e4b154cf7ad34bfe3062fad6c495187f4e7586))
+* **deps:** bump dagger.io/dagger from 0.18.19 to 0.19.2 ([#207](https://github.com/zerok/webmentiond/issues/207)) ([b4b5123](https://github.com/zerok/webmentiond/commit/b4b512361b44c99e28ab1370f4eb2548c40378c5))
+* **deps:** bump dagger.io/dagger from 0.19.2 to 0.19.4 ([#212](https://github.com/zerok/webmentiond/issues/212)) ([e09774f](https://github.com/zerok/webmentiond/commit/e09774f908436f7d241c2c32d2a34416b97f0ff0))
+* **deps:** bump dagger.io/dagger from 0.19.4 to 0.19.6 ([#214](https://github.com/zerok/webmentiond/issues/214)) ([d5c6343](https://github.com/zerok/webmentiond/commit/d5c6343b9d3e68b379cec4289bb451cf0059bb88))
+* **deps:** bump dagger.io/dagger from 0.19.6 to 0.19.7 ([#222](https://github.com/zerok/webmentiond/issues/222)) ([093e58c](https://github.com/zerok/webmentiond/commit/093e58cb2d578e093bc774171a4ba630e4c2f87a))
+* **deps:** bump docker/setup-qemu-action from 3.6.0 to 3.7.0 ([#216](https://github.com/zerok/webmentiond/issues/216)) ([52885ee](https://github.com/zerok/webmentiond/commit/52885ee837650b694ad95bce1b9c9b0b5df76eaa))
+* **deps:** bump github.com/testcontainers/testcontainers-go from 0.39.0 to 0.40.0 ([#213](https://github.com/zerok/webmentiond/issues/213)) ([8431b52](https://github.com/zerok/webmentiond/commit/8431b520972312c4b86906f290b8f4755d345c7e))
+* **deps:** bump golang.org/x/crypto from 0.44.0 to 0.45.0 ([#219](https://github.com/zerok/webmentiond/issues/219)) ([72d41a2](https://github.com/zerok/webmentiond/commit/72d41a2a394b820410571fb84c10589519390717))
+* **deps:** bump golang.org/x/net from 0.44.0 to 0.46.0 ([#208](https://github.com/zerok/webmentiond/issues/208)) ([f8c5b4d](https://github.com/zerok/webmentiond/commit/f8c5b4dceae2869be25c3d5f6cf22531015d7ae1))
+* **deps:** bump golang.org/x/net from 0.46.0 to 0.47.0 ([#217](https://github.com/zerok/webmentiond/issues/217)) ([bf1b8ca](https://github.com/zerok/webmentiond/commit/bf1b8caaafe07ead9405b6df2b66baafb83f1c73))
+* **deps:** bump golang.org/x/sync from 0.17.0 to 0.18.0 ([#215](https://github.com/zerok/webmentiond/issues/215)) ([86c77ad](https://github.com/zerok/webmentiond/commit/86c77ad6f0f33fb074deede708b43ec1fc5d3cca))
+* **deps:** bump googleapis/release-please-action from 4.3.0 to 4.4.0 ([#211](https://github.com/zerok/webmentiond/issues/211)) ([1ae5150](https://github.com/zerok/webmentiond/commit/1ae5150602c998acec1ceced6d5ee7478408c962))
+* **deps:** bump js-yaml from 3.14.1 to 3.14.2 in /frontend ([#218](https://github.com/zerok/webmentiond/issues/218)) ([1ffea07](https://github.com/zerok/webmentiond/commit/1ffea0751725e40309bcf80b0468a147078fb8c7))
+
+
+### 🤖 Continuous Integration
+
+* attach binaries to release ([#226](https://github.com/zerok/webmentiond/issues/226)) ([a929611](https://github.com/zerok/webmentiond/commit/a929611a3ee5fa70f1bb4640bec2cb1770ba8cbd))
+
 ## [1.2.0](https://github.com/zerok/webmentiond/compare/v1.1.1...v1.2.0) (2025-10-11)
 
 
