@@ -4,9 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"time"
 
 	"dagger.io/dagger"
+	"github.com/google/go-github/v79/github"
+	"golang.org/x/sync/errgroup"
 )
 
 type buildPackageOptions struct {
@@ -23,6 +26,10 @@ type buildPackageOptions struct {
 	releaseVersion     string
 	platforms          []string
 	imageName          string
+	githubClient       *github.Client
+	githubOwner        string
+	githubRepo         string
+	githubReleaseID    int64
 }
 
 func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageOptions) error {
@@ -89,12 +96,47 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 		imageTag = opts.releaseVersion
 	}
 	fullImageName := fmt.Sprintf("%s:%s", imageName, imageTag)
+	binaryMapping := map[dagger.Platform]string{
+		"linux/amd64": "webmentiond-linux-amd64-musl",
+		"linux/arm64": "webmentiond-linux-arm64-musl",
+	}
 
 	if opts.publish {
-		_, err := dc.Container().Publish(ctx, fullImageName, dagger.ContainerPublishOpts{
-			PlatformVariants: variants,
+		grp, ctx := errgroup.WithContext(ctx)
+		grp.Go(func() error {
+			_, err := dc.Container().Publish(ctx, fullImageName, dagger.ContainerPublishOpts{
+				PlatformVariants: variants,
+			})
+			return err
 		})
-		return err
+		// If we are running in the context of a release, we also need to export the produced binaries
+		for _, variant := range variants {
+			grp.Go(func() error {
+				platform, err := variant.Platform(ctx)
+				if err != nil {
+					return err
+				}
+				filename, ok := binaryMapping[platform]
+				if !ok {
+					return fmt.Errorf("unknown platform %s", platform)
+				}
+				if _, err := variant.File("/usr/local/bin/webmentiond").Export(ctx, filename); err != nil {
+					return err
+				}
+				fp, err := os.Open(filename)
+				if err != nil {
+					return err
+				}
+				defer fp.Close()
+				if _, _, err := opts.githubClient.Repositories.UploadReleaseAsset(ctx, opts.githubOwner, opts.githubRepo, opts.githubReleaseID, &github.UploadOptions{
+					Name: filename,
+				}, fp); err != nil {
+					return err
+				}
+				return nil
+			})
+		}
+		return grp.Wait()
 	}
 
 	// If there is no publishing, then we should at least build the images

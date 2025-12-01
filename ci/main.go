@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 
 	"dagger.io/dagger"
+	"github.com/google/go-github/v79/github"
 	"github.com/rs/zerolog"
 	"github.com/spf13/pflag"
 )
@@ -51,6 +55,20 @@ func main() {
 		Exclude: []string{"frontend/node_modules", "bin", "data", ".github", "dist"},
 	})
 
+	gh := github.NewClient(nil)
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		gh = gh.WithAuthToken(token)
+	}
+
+	var owner, repo string
+	var releaseID int64
+	if uploadURL := os.Getenv("GITHUB_RELEASE_UPLOAD_URL"); uploadURL != "" {
+		owner, repo, releaseID, err = parseUploadURL(uploadURL)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("Failed to parse upload URL")
+		}
+	}
+
 	if doTest {
 		if err := runTests(ctx, dc, srcDir, goCache, nodeCache); err != nil {
 			logger.Fatal().Err(err).Msg("Tests failed")
@@ -59,14 +77,18 @@ func main() {
 
 	if doBuild {
 		if err := runBuildPackages(ctx, dc, buildPackageOptions{
-			commitID:       commitID,
-			srcDir:         srcDir,
-			goCache:        goCache,
-			nodeCache:      nodeCache,
-			publish:        doPublish,
-			releaseVersion: os.Getenv("RELEASE_VERSION"),
-			platforms:      platforms,
-			imageName:      os.Getenv("IMAGE_NAME"),
+			commitID:        commitID,
+			srcDir:          srcDir,
+			goCache:         goCache,
+			nodeCache:       nodeCache,
+			publish:         doPublish,
+			releaseVersion:  os.Getenv("RELEASE_VERSION"),
+			platforms:       platforms,
+			imageName:       os.Getenv("IMAGE_NAME"),
+			githubClient:    gh,
+			githubOwner:     owner,
+			githubRepo:      repo,
+			githubReleaseID: releaseID,
 		}); err != nil {
 			logger.Fatal().Err(err).Msg("Package building failed")
 		}
@@ -128,4 +150,19 @@ func requireEnv(ctx context.Context, name string, conditional bool) string {
 		logger.Fatal().Msgf("%s not set", name)
 	}
 	return val
+}
+
+var uploadURLPattern = regexp.MustCompile("https://uploads\\.github\\.com/repos/([^/]+)/([^/]+)/releases/(\\d+)/assets")
+
+func parseUploadURL(v string) (owner string, repo string, releaseID int64, err error) {
+	match := uploadURLPattern.FindStringSubmatch(v)
+	if len(match) != 4 {
+		err = fmt.Errorf("could not parse upload URL")
+		return
+	}
+	owner = match[1]
+	repo = match[2]
+	rawReleaseID := match[3]
+	releaseID, err = strconv.ParseInt(rawReleaseID, 10, 64)
+	return
 }
