@@ -14,6 +14,7 @@ jobs:
     outputs:
       release_created: "${{ steps.release-please.outputs.release_created }}"
       release_tag: "${{ steps.release-please.outputs.tag_name }}"
+      release_upload_url: "${{ steps.release-please.outputs.upload_url }}"
 
     steps:
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
@@ -54,7 +55,7 @@ jobs:
           GIT_COMMIT_ID: ${{ github.sha }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           RELEASE_VERSION: "${{ needs.release-please.outputs.release_tag }}"
-          GITHUB_RELEASE_UPLOAD_URL: "${{ needs.release-please.outputs.upload_url }}"
+          GITHUB_RELEASE_UPLOAD_URL: "${{ needs.release-please.outputs.release_upload_url }}"
           IMAGE_NAME: "zerok/webmentiond"
           GITHUB_TOKEN: "${{ github.token }}"
         run: go run ./ci --build --publish
