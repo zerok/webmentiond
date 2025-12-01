@@ -29,7 +29,7 @@ jobs:
 
   release-artifacts:
     permissions:
-      contents: read
+      contents: write # write required for adding binaries
     runs-on: ubuntu-latest
     needs:
       - release-please
@@ -54,6 +54,8 @@ jobs:
           GIT_COMMIT_ID: ${{ github.sha }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           RELEASE_VERSION: "${{ needs.release-please.outputs.release_tag }}"
+          GITHUB_RELEASE_UPLOAD_URL: "${{ needs.release-please.outputs.upload_url }}"
           IMAGE_NAME: "zerok/webmentiond"
+          GITHUB_TOKEN: "${{ github.token }}"
         run: go run ./ci --build --publish
 
