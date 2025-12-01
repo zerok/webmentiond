@@ -123,15 +123,17 @@ func runBuildPackages(ctx context.Context, dc *dagger.Client, opts buildPackageO
 				if _, err := variant.File("/usr/local/bin/webmentiond").Export(ctx, filename); err != nil {
 					return err
 				}
-				fp, err := os.Open(filename)
-				if err != nil {
-					return err
-				}
-				defer fp.Close()
-				if _, _, err := opts.githubClient.Repositories.UploadReleaseAsset(ctx, opts.githubOwner, opts.githubRepo, opts.githubReleaseID, &github.UploadOptions{
-					Name: filename,
-				}, fp); err != nil {
-					return err
+				if opts.githubReleaseID != 0 {
+					fp, err := os.Open(filename)
+					if err != nil {
+						return err
+					}
+					defer fp.Close()
+					if _, _, err := opts.githubClient.Repositories.UploadReleaseAsset(ctx, opts.githubOwner, opts.githubRepo, opts.githubReleaseID, &github.UploadOptions{
+						Name: filename,
+					}, fp); err != nil {
+						return err
+					}
 				}
 				return nil
 			})
