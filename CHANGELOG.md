@@ -1,5 +1,12 @@
 # Changes
 
+## [1.3.0-rc2](https://github.com/zerok/webmentiond/compare/v1.3.0-rc1...v1.3.0-rc2) (2025-12-01)
+
+
+### 🤖 Continuous Integration
+
+* fix release upload URL ([#227](https://github.com/zerok/webmentiond/issues/227)) ([f34bacb](https://github.com/zerok/webmentiond/commit/f34bacb7bf759a3103f41f58b2eb41494a871969))
+
 ## [1.3.0-rc1](https://github.com/zerok/webmentiond/compare/v1.2.0...v1.3.0-rc1) (2025-12-01)
 
 
