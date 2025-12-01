@@ -1,5 +1,17 @@
 # Changes
 
+## [1.3.0](https://github.com/zerok/webmentiond/compare/v1.3.0-rc2...v1.3.0) (2025-12-01)
+
+
+### 🏗️ Build System
+
+* **deps:** bump github.com/golang-migrate/migrate/v4 from 4.19.0 to 4.19.1 ([#225](https://github.com/zerok/webmentiond/issues/225)) ([7e52e7e](https://github.com/zerok/webmentiond/commit/7e52e7e661fb8dc04478b93dafb1b3734d886355))
+
+
+### 🔧 Miscellaneous Chores
+
+* update Go and Alpine inside Dagger ([#231](https://github.com/zerok/webmentiond/issues/231)) ([5b339bc](https://github.com/zerok/webmentiond/commit/5b339bc1060fd5e7c114ba189f61d7b01db05504))
+
 ## [1.3.0-rc2](https://github.com/zerok/webmentiond/compare/v1.3.0-rc1...v1.3.0-rc2) (2025-12-01)
 
 
