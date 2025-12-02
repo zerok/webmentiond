@@ -2,8 +2,7 @@ package main
 
 import (
 	"context"
-
-	"dagger.io/dagger"
+	"dagger/webmentiond/internal/dagger"
 )
 
 type buildWebsiteOptions struct {
@@ -12,12 +11,20 @@ type buildWebsiteOptions struct {
 	sshPrivateKey *dagger.Secret
 }
 
-func runBuildWebsite(ctx context.Context, dc *dagger.Client, opts buildWebsiteOptions) error {
-	container := dc.Container().From("zerok/mkdocs:latest").WithMountedDirectory("/data", opts.srcDir).WithExec([]string{"mkdocs", "build"})
-	if opts.publish {
-		_, err := dc.Container().From(alpineImage).
+func (m *Webmentiond) BuildWebsite(
+	ctx context.Context,
+	sshPrivateKey *dagger.Secret,
+	sourceDir *dagger.Directory,
+	publish bool,
+) error {
+	container := dag.Container().
+		From("zerok/mkdocs:latest").
+		WithMountedDirectory("/data", sourceDir).
+		WithExec([]string{"mkdocs", "build"})
+	if publish {
+		_, err := dag.Container().From(alpineImage).
 			WithExec([]string{"apk", "add", "--no-cache", "rsync", "openssh"}).
-			WithMountedSecret("/root/.ssh/id_rsa", opts.sshPrivateKey).
+			WithMountedSecret("/root/.ssh/id_rsa", sshPrivateKey).
 			WithDirectory("/src", container.Directory("/data/site")).
 			WithWorkdir("/src").
 			WithExec([]string{"rsync", "-e", "ssh -o StrictHostKeyChecking=no", "-avz", ".", "www-webmentiondorg@webmentiond.org:/srv/www/webmentiond.org/www/htdocs/"}).

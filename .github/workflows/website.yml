@@ -1,0 +1,31 @@
+name: Website
+
+on:
+  pull_request:
+    paths:
+      - mkdocs.yml
+      - docs/**
+
+  push:
+    branches:
+      - main
+    paths:
+      - mkdocs.yml
+      - docs/**
+
+jobs:
+  website:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      with:
+        fetch-depth: 0
+
+    - name: Run tests
+      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      with:
+        verb: call
+        args: --silent build-website --source-dir . --ssh-private-key env://SSH_PRIVATE_KEY --publish=${{ github.event_name == 'push' && 'true' || 'false' }}
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+
