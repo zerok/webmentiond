@@ -12,7 +12,7 @@ import (
 	"github.com/google/go-github/v79/github"
 )
 
-var goImage = "golang:1.25.4"
+var goImage = "golang:1.25.5"
 var nodeImage = "node:18"
 var alpineImage = "alpine:3.22"
 var mailpitImage = "axllent/mailpit:v1.8"
