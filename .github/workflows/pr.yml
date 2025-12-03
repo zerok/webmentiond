@@ -9,19 +9,35 @@ on:
       - synchronize
 
 jobs:
-  "ci-main":
-    name: "CI"
+  ci-test:
+    name: "Run backend tests"
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
       with:
         fetch-depth: 0
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
-    - uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
-    - name: Run dagger
-      env:
-        GIT_COMMIT_ID: ${{ github.sha }}
-        RELEASE_VERSION: "testing"
-        IMAGE_NAME: "zerok/webmentiond"
-      run: go run ./ci --platform linux/amd64 --test --build --website
+
+    - name: Run tests
+      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      with:
+        verb: call
+        args: --silent test-backend --root-dir . combined-output
+
+  ci-frontend:
+    name: "Build test frontend"
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      with:
+        fetch-depth: 0
+
+    - name: Build frontend
+      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      with:
+        verb: call
+        args: --silent build-frontend --frontend-dir frontend export --path ./dist/frontend
+
