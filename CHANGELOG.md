@@ -1,5 +1,22 @@
 # Changes
 
+## [1.3.1-rc1](https://github.com/zerok/webmentiond/compare/v1.3.0...v1.3.1-rc1) (2025-12-03)
+
+
+### 🏗️ Build System
+
+* **deps:** bump express from 4.21.0 to 4.22.0 in /frontend ([#229](https://github.com/zerok/webmentiond/issues/229)) ([e1d194f](https://github.com/zerok/webmentiond/commit/e1d194f066fc746cf21adba8dee76843260b88cf))
+
+
+### 🤖 Continuous Integration
+
+* rewrite CI using dagger modules ([#233](https://github.com/zerok/webmentiond/issues/233)) ([c210fa1](https://github.com/zerok/webmentiond/commit/c210fa10a12603a05ed589ca52f818e8f7b96929))
+
+
+### 🔧 Miscellaneous Chores
+
+* update Go to 1.25.5 ([#234](https://github.com/zerok/webmentiond/issues/234)) ([8da9374](https://github.com/zerok/webmentiond/commit/8da93744fdd3294c148c091863843a52edce05df))
+
 ## [1.3.0](https://github.com/zerok/webmentiond/compare/v1.3.0-rc2...v1.3.0) (2025-12-01)
 
 
