@@ -1,5 +1,12 @@
 # Changes
 
+## [1.3.1-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc2...v1.3.1-rc3) (2025-12-03)
+
+
+### 🤖 Continuous Integration
+
+* fix used token in release pipeline ([#237](https://github.com/zerok/webmentiond/issues/237)) ([57a8528](https://github.com/zerok/webmentiond/commit/57a8528f54d1da6a21d68b0ba110d48a427204e8))
+
 ## [1.3.1-rc2](https://github.com/zerok/webmentiond/compare/v1.3.1-rc1...v1.3.1-rc2) (2025-12-03)
 
 
