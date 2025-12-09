@@ -11,7 +11,7 @@ COPY --from=nodebuilder /src/frontend /src/
 WORKDIR /src/cmd/webmentiond
 RUN go build --tags "libsqlite3 linux"
 
-FROM alpine:3.22
+FROM alpine:3.23
 RUN apk add --no-cache sqlite-dev
 VOLUME ["/data"]
 RUN adduser -u 1500 -h /data -H -D webmentiond && \
