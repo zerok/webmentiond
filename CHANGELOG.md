@@ -1,5 +1,14 @@
 # Changes
 
+## [1.3.2-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc3...v1.3.2-rc3) (2025-12-09)
+
+
+### 🏗️ Build System
+
+* **deps:** bump actions/checkout from 6.0.0 to 6.0.1 ([#243](https://github.com/zerok/webmentiond/issues/243)) ([fa7389b](https://github.com/zerok/webmentiond/commit/fa7389b7cea99b4ffd0d6a551cc5b1fe80c8daad))
+* **deps:** bump alpine from 3.22 to 3.23 ([#242](https://github.com/zerok/webmentiond/issues/242)) ([56404a5](https://github.com/zerok/webmentiond/commit/56404a5fd720cf94ea1c1c697a324b811c2ab805))
+* **deps:** bump github.com/spf13/cobra from 1.10.1 to 1.10.2 ([#241](https://github.com/zerok/webmentiond/issues/241)) ([30a7c96](https://github.com/zerok/webmentiond/commit/30a7c96127338fbd76bb47d99c4b96b3db470978))
+
 ## [1.3.1-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc2...v1.3.1-rc3) (2025-12-03)
 
 
