@@ -4,7 +4,7 @@ COPY frontend /src/frontend
 WORKDIR /src/frontend
 RUN yarn && yarn run webpack --mode production
 
-FROM golang:1.25-alpine AS gobuilder
+FROM golang:1.26-alpine AS gobuilder
 RUN apk add --no-cache gcc libc-dev git sqlite-dev
 COPY . /src
 COPY --from=nodebuilder /src/frontend /src/
