@@ -20,7 +20,7 @@ jobs:
         fetch-depth: 0
 
     - name: Run tests
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent test-backend --root-dir . combined-output
@@ -36,7 +36,7 @@ jobs:
         fetch-depth: 0
 
     - name: Build frontend
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent build-frontend --frontend-dir frontend export --path ./dist/frontend
