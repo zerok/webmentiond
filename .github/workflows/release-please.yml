@@ -42,7 +42,7 @@ jobs:
         fetch-depth: 0
 
     - name: Build frontend
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent build-frontend --frontend-dir frontend export --path ./dist/frontend
@@ -72,7 +72,7 @@ jobs:
         path: ./dist/frontend
 
     - name: Build binaries
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent build-binaries --root-dir . --built-frontend ./dist/frontend  --commit-id ${{ github.sha }} --version "${{ needs.release-please.outputs.release_tag }}" --arch arm64 export --path ./dist/backend
@@ -102,7 +102,7 @@ jobs:
         path: ./dist/frontend
 
     - name: Build binaries
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent build-binaries --root-dir . --built-frontend ./dist/frontend  --commit-id ${{ github.sha }} --version "${{ needs.release-please.outputs.release_tag }}" --arch amd64 export --path ./dist/backend
@@ -141,13 +141,13 @@ jobs:
       run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
     - name: Upload to dockerhub
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent create-docker-image --binaries ./dist/backend --tag "${{ needs.release-please.outputs.release_tag }}"
 
     - name: Attach binaries
-      uses: dagger/dagger-for-github@d913e70051faf3b907d4dd96ef1161083c88c644 # v8.2.0
+      uses: dagger/dagger-for-github@456fc3af63a2ba6f9789af9c55045b459115541b # v8.3.0
       with:
         verb: call
         args: --silent attach-binaries --token=env://GH_TOKEN --binaries ./dist/backend --upload-url="${{ needs.release-please.outputs.release_upload_url }}"
