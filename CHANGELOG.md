@@ -1,5 +1,28 @@
 # Changes
 
+## [1.3.2-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc3...v1.3.2-rc3) (2026-02-17)
+
+
+### 🏗️ Build System
+
+* **deps-dev:** bump webpack from 5.94.0 to 5.104.1 in /frontend ([#256](https://github.com/zerok/webmentiond/issues/256)) ([73be3ba](https://github.com/zerok/webmentiond/commit/73be3ba12443a13c184ac25b127c63e61050c8d2))
+* **deps:** bump actions/checkout from 6.0.0 to 6.0.1 ([#243](https://github.com/zerok/webmentiond/issues/243)) ([fa7389b](https://github.com/zerok/webmentiond/commit/fa7389b7cea99b4ffd0d6a551cc5b1fe80c8daad))
+* **deps:** bump actions/checkout from 6.0.1 to 6.0.2 ([#252](https://github.com/zerok/webmentiond/issues/252)) ([6f0a830](https://github.com/zerok/webmentiond/commit/6f0a830bdeadc750b4e16bff120cd51fc6598396))
+* **deps:** bump actions/download-artifact from 6.0.0 to 7.0.0 ([#247](https://github.com/zerok/webmentiond/issues/247)) ([1257278](https://github.com/zerok/webmentiond/commit/1257278fec3e7de110ba1e14a3caad8256e6c117))
+* **deps:** bump actions/upload-artifact from 5.0.0 to 6.0.0 ([#246](https://github.com/zerok/webmentiond/issues/246)) ([2a0324a](https://github.com/zerok/webmentiond/commit/2a0324a64340127e5b8b12e1c389bc7436ad0cce))
+* **deps:** bump alpine from 3.22 to 3.23 ([#242](https://github.com/zerok/webmentiond/issues/242)) ([56404a5](https://github.com/zerok/webmentiond/commit/56404a5fd720cf94ea1c1c697a324b811c2ab805))
+* **deps:** bump dagger/dagger-for-github from 8.2.0 to 8.3.0 ([#260](https://github.com/zerok/webmentiond/issues/260)) ([0972c93](https://github.com/zerok/webmentiond/commit/0972c93fa2eb173f7e52bec7aecbe6eba097ae46))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.3 to 5.2.4 ([#250](https://github.com/zerok/webmentiond/issues/250)) ([46afcb9](https://github.com/zerok/webmentiond/commit/46afcb94d737402616b25ff9cf05ad33237964a6))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.4 to 5.2.5 ([#257](https://github.com/zerok/webmentiond/issues/257)) ([b34ecea](https://github.com/zerok/webmentiond/commit/b34ecea3c29006e81cec6f2df95e7b9c10d99b22))
+* **deps:** bump github.com/golang-jwt/jwt/v5 from 5.3.0 to 5.3.1 ([#255](https://github.com/zerok/webmentiond/issues/255)) ([19bd09c](https://github.com/zerok/webmentiond/commit/19bd09c7d718ea679e30d7301d79e1652c4d1d59))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.32 to 1.14.33 ([#248](https://github.com/zerok/webmentiond/issues/248)) ([371432c](https://github.com/zerok/webmentiond/commit/371432c8471d8f3db67c6bdf9338448f82219ffd))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.33 to 1.14.34 ([#259](https://github.com/zerok/webmentiond/issues/259)) ([b03e557](https://github.com/zerok/webmentiond/commit/b03e5578d543caaeb7047953c79d2c7f8f63984c))
+* **deps:** bump github.com/spf13/cobra from 1.10.1 to 1.10.2 ([#241](https://github.com/zerok/webmentiond/issues/241)) ([30a7c96](https://github.com/zerok/webmentiond/commit/30a7c96127338fbd76bb47d99c4b96b3db470978))
+* **deps:** bump golang from 1.25-alpine to 1.26-alpine ([#261](https://github.com/zerok/webmentiond/issues/261)) ([3e747be](https://github.com/zerok/webmentiond/commit/3e747be907510f1e45ad45814a15924eecec7bd5))
+* **deps:** bump golang.org/x/net from 0.47.0 to 0.49.0 ([#249](https://github.com/zerok/webmentiond/issues/249)) ([5305689](https://github.com/zerok/webmentiond/commit/5305689bac689221929d63997fb11d25f498bebe))
+* **deps:** bump golang.org/x/net from 0.49.0 to 0.50.0 ([#258](https://github.com/zerok/webmentiond/issues/258)) ([0df8395](https://github.com/zerok/webmentiond/commit/0df83957969c3502e27baf5d999723fd2661ecc6))
+* **deps:** bump lodash from 4.17.21 to 4.17.23 in /frontend ([#251](https://github.com/zerok/webmentiond/issues/251)) ([58c648a](https://github.com/zerok/webmentiond/commit/58c648a312b9897b6a3697f233a93f00ca58239b))
+
 ## [1.3.1-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc2...v1.3.1-rc3) (2025-12-03)
 
 
