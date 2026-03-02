@@ -1,6 +1,6 @@
 module github.com/zerok/webmentiond
 
-go 1.24.0
+go 1.25.0
 
 toolchain go1.25.1
 
@@ -18,7 +18,7 @@ require (
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go v0.40.0
-	golang.org/x/net v0.50.0
+	golang.org/x/net v0.51.0
 	willnorris.com/go/microformats v1.2.0
 )
 
