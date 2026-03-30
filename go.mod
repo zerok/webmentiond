@@ -13,7 +13,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.37
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rs/xid v1.6.0
-	github.com/rs/zerolog v1.34.0
+	github.com/rs/zerolog v1.35.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
