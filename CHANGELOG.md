@@ -1,5 +1,53 @@
 # Changes
 
+## [1.3.2-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc3...v1.3.2-rc3) (2026-04-29)
+
+
+### 🏗️ Build System
+
+* **deps-dev:** bump axios from 1.8.2 to 1.15.0 in /frontend ([#278](https://github.com/zerok/webmentiond/issues/278)) ([6457f3c](https://github.com/zerok/webmentiond/commit/6457f3cd6ad3a8df58b0299cf7539378b4ab52fb))
+* **deps-dev:** bump webpack from 5.94.0 to 5.104.1 in /frontend ([#256](https://github.com/zerok/webmentiond/issues/256)) ([73be3ba](https://github.com/zerok/webmentiond/commit/73be3ba12443a13c184ac25b127c63e61050c8d2))
+* **deps:** bump actions/checkout from 6.0.0 to 6.0.1 ([#243](https://github.com/zerok/webmentiond/issues/243)) ([fa7389b](https://github.com/zerok/webmentiond/commit/fa7389b7cea99b4ffd0d6a551cc5b1fe80c8daad))
+* **deps:** bump actions/checkout from 6.0.1 to 6.0.2 ([#252](https://github.com/zerok/webmentiond/issues/252)) ([6f0a830](https://github.com/zerok/webmentiond/commit/6f0a830bdeadc750b4e16bff120cd51fc6598396))
+* **deps:** bump actions/download-artifact from 6.0.0 to 7.0.0 ([#247](https://github.com/zerok/webmentiond/issues/247)) ([1257278](https://github.com/zerok/webmentiond/commit/1257278fec3e7de110ba1e14a3caad8256e6c117))
+* **deps:** bump actions/download-artifact from 7.0.0 to 8.0.0 ([#265](https://github.com/zerok/webmentiond/issues/265)) ([38e1ff4](https://github.com/zerok/webmentiond/commit/38e1ff4d2f9bf3549e1459f1616dc5940cdcd267))
+* **deps:** bump actions/upload-artifact from 5.0.0 to 6.0.0 ([#246](https://github.com/zerok/webmentiond/issues/246)) ([2a0324a](https://github.com/zerok/webmentiond/commit/2a0324a64340127e5b8b12e1c389bc7436ad0cce))
+* **deps:** bump actions/upload-artifact from 6.0.0 to 7.0.0 ([#266](https://github.com/zerok/webmentiond/issues/266)) ([8c1a47a](https://github.com/zerok/webmentiond/commit/8c1a47ad2954f8169b7e804518a41fd6b9257f2e))
+* **deps:** bump actions/upload-artifact from 7.0.0 to 7.0.1 ([#282](https://github.com/zerok/webmentiond/issues/282)) ([af934b8](https://github.com/zerok/webmentiond/commit/af934b828e32d21881d353b6510b703efe5e2cc5))
+* **deps:** bump alpine from 3.22 to 3.23 ([#242](https://github.com/zerok/webmentiond/issues/242)) ([56404a5](https://github.com/zerok/webmentiond/commit/56404a5fd720cf94ea1c1c697a324b811c2ab805))
+* **deps:** bump dagger/dagger-for-github from 8.2.0 to 8.3.0 ([#260](https://github.com/zerok/webmentiond/issues/260)) ([0972c93](https://github.com/zerok/webmentiond/commit/0972c93fa2eb173f7e52bec7aecbe6eba097ae46))
+* **deps:** bump dagger/dagger-for-github from 8.3.0 to 8.4.0 ([#267](https://github.com/zerok/webmentiond/issues/267)) ([11b2009](https://github.com/zerok/webmentiond/commit/11b20093a10b58a1a04627fd0cd15ccf268180db))
+* **deps:** bump dagger/dagger-for-github from 8.4.0 to 8.4.1 ([#272](https://github.com/zerok/webmentiond/issues/272)) ([c9a2e6c](https://github.com/zerok/webmentiond/commit/c9a2e6c09d580f3538d2c2d1ff451247055a639e))
+* **deps:** bump follow-redirects from 1.15.9 to 1.16.0 in /frontend ([#284](https://github.com/zerok/webmentiond/issues/284)) ([03dee1a](https://github.com/zerok/webmentiond/commit/03dee1a09de8f7bfebb9a707c39e488a0accf9d1))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.3 to 5.2.4 ([#250](https://github.com/zerok/webmentiond/issues/250)) ([46afcb9](https://github.com/zerok/webmentiond/commit/46afcb94d737402616b25ff9cf05ad33237964a6))
+* **deps:** bump github.com/go-chi/chi/v5 from 5.2.4 to 5.2.5 ([#257](https://github.com/zerok/webmentiond/issues/257)) ([b34ecea](https://github.com/zerok/webmentiond/commit/b34ecea3c29006e81cec6f2df95e7b9c10d99b22))
+* **deps:** bump github.com/golang-jwt/jwt/v5 from 5.3.0 to 5.3.1 ([#255](https://github.com/zerok/webmentiond/issues/255)) ([19bd09c](https://github.com/zerok/webmentiond/commit/19bd09c7d718ea679e30d7301d79e1652c4d1d59))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.32 to 1.14.33 ([#248](https://github.com/zerok/webmentiond/issues/248)) ([371432c](https://github.com/zerok/webmentiond/commit/371432c8471d8f3db67c6bdf9338448f82219ffd))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.33 to 1.14.34 ([#259](https://github.com/zerok/webmentiond/issues/259)) ([b03e557](https://github.com/zerok/webmentiond/commit/b03e5578d543caaeb7047953c79d2c7f8f63984c))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.34 to 1.14.37 ([#271](https://github.com/zerok/webmentiond/issues/271)) ([00fd3f8](https://github.com/zerok/webmentiond/commit/00fd3f8f7e167bf6c7a3c8e055068fa17b3bb8d4))
+* **deps:** bump github.com/mattn/go-sqlite3 from 1.14.37 to 1.14.42 ([#281](https://github.com/zerok/webmentiond/issues/281)) ([452f174](https://github.com/zerok/webmentiond/commit/452f174e368167b673bc8bd823e0116b4d4b4308))
+* **deps:** bump github.com/rs/zerolog from 1.34.0 to 1.35.0 ([#274](https://github.com/zerok/webmentiond/issues/274)) ([7630e79](https://github.com/zerok/webmentiond/commit/7630e79427cbc30b62b9b733026dc5c0b8046e6d))
+* **deps:** bump github.com/rs/zerolog from 1.35.0 to 1.35.1 ([#287](https://github.com/zerok/webmentiond/issues/287)) ([c3a9e90](https://github.com/zerok/webmentiond/commit/c3a9e902d7133c2608580e647a63ca3bf994f7fe))
+* **deps:** bump github.com/spf13/cobra from 1.10.1 to 1.10.2 ([#241](https://github.com/zerok/webmentiond/issues/241)) ([30a7c96](https://github.com/zerok/webmentiond/commit/30a7c96127338fbd76bb47d99c4b96b3db470978))
+* **deps:** bump github.com/testcontainers/testcontainers-go from 0.40.0 to 0.41.0 ([#268](https://github.com/zerok/webmentiond/issues/268)) ([37458fc](https://github.com/zerok/webmentiond/commit/37458fc1b2edd2cd37f4134d2cc66cbfec032d13))
+* **deps:** bump github.com/testcontainers/testcontainers-go from 0.41.0 to 0.42.0 ([#279](https://github.com/zerok/webmentiond/issues/279)) ([6e7aec3](https://github.com/zerok/webmentiond/commit/6e7aec3502617bd349c11d597c5ea2fa7d5f925a))
+* **deps:** bump go.opentelemetry.io/otel/sdk from 1.38.0 to 1.40.0 ([#262](https://github.com/zerok/webmentiond/issues/262)) ([83d6d0c](https://github.com/zerok/webmentiond/commit/83d6d0c1699c11abbcce6851d9b60b5c5874a582))
+* **deps:** bump go.opentelemetry.io/otel/sdk from 1.41.0 to 1.43.0 ([#285](https://github.com/zerok/webmentiond/issues/285)) ([98efa1c](https://github.com/zerok/webmentiond/commit/98efa1cd410ebddb2064b7af34a370cad675b7e0))
+* **deps:** bump golang from 1.25-alpine to 1.26-alpine ([#261](https://github.com/zerok/webmentiond/issues/261)) ([3e747be](https://github.com/zerok/webmentiond/commit/3e747be907510f1e45ad45814a15924eecec7bd5))
+* **deps:** bump golang.org/x/net from 0.47.0 to 0.49.0 ([#249](https://github.com/zerok/webmentiond/issues/249)) ([5305689](https://github.com/zerok/webmentiond/commit/5305689bac689221929d63997fb11d25f498bebe))
+* **deps:** bump golang.org/x/net from 0.49.0 to 0.50.0 ([#258](https://github.com/zerok/webmentiond/issues/258)) ([0df8395](https://github.com/zerok/webmentiond/commit/0df83957969c3502e27baf5d999723fd2661ecc6))
+* **deps:** bump golang.org/x/net from 0.50.0 to 0.51.0 ([#264](https://github.com/zerok/webmentiond/issues/264)) ([c3c1c99](https://github.com/zerok/webmentiond/commit/c3c1c9959b3884b2f9dabf3fe117648793d9a99c))
+* **deps:** bump golang.org/x/net from 0.51.0 to 0.52.0 ([#269](https://github.com/zerok/webmentiond/issues/269)) ([11e0411](https://github.com/zerok/webmentiond/commit/11e0411989bcca11144ed201468f12909d578165))
+* **deps:** bump golang.org/x/net from 0.52.0 to 0.53.0 ([#280](https://github.com/zerok/webmentiond/issues/280)) ([42225af](https://github.com/zerok/webmentiond/commit/42225afa827e67c5874fb9afa2ebe782af1774df))
+* **deps:** bump google.golang.org/grpc from 1.79.1 to 1.79.3 ([#270](https://github.com/zerok/webmentiond/issues/270)) ([85becde](https://github.com/zerok/webmentiond/commit/85becdeb66c9122750e790c7dbb67e09e3a7294f))
+* **deps:** bump googleapis/release-please-action from 4.4.0 to 4.4.1 ([#283](https://github.com/zerok/webmentiond/issues/283)) ([de0b8f2](https://github.com/zerok/webmentiond/commit/de0b8f25a812c5917e8ca4d7016aef4ac7b3cfd6))
+* **deps:** bump googleapis/release-please-action from 4.4.1 to 5.0.0 ([#288](https://github.com/zerok/webmentiond/issues/288)) ([d5aad8b](https://github.com/zerok/webmentiond/commit/d5aad8b0325d6dd553d9625ac8c4073c120c30e5))
+* **deps:** bump lodash from 4.17.21 to 4.17.23 in /frontend ([#251](https://github.com/zerok/webmentiond/issues/251)) ([58c648a](https://github.com/zerok/webmentiond/commit/58c648a312b9897b6a3697f233a93f00ca58239b))
+* **deps:** bump lodash from 4.17.23 to 4.18.1 in /frontend ([#277](https://github.com/zerok/webmentiond/issues/277)) ([61266f7](https://github.com/zerok/webmentiond/commit/61266f7c3b1d58e5e369d41be51ecba0a5762f62))
+* **deps:** bump minimatch from 3.0.4 to 3.1.5 in /frontend ([#263](https://github.com/zerok/webmentiond/issues/263)) ([81b5a3e](https://github.com/zerok/webmentiond/commit/81b5a3eb3871611a2b0127a6451bb0e6b987dbbc))
+* **deps:** bump picomatch from 2.3.1 to 2.3.2 in /frontend ([#273](https://github.com/zerok/webmentiond/issues/273)) ([160838b](https://github.com/zerok/webmentiond/commit/160838bb39023708c147b9ed2385b88df8b166ea))
+* **deps:** bump postcss from 8.4.31 to 8.5.10 in /frontend ([#286](https://github.com/zerok/webmentiond/issues/286)) ([8f7cd45](https://github.com/zerok/webmentiond/commit/8f7cd45106f60d6b77f44c08fe61a6718b8adda5))
+
 ## [1.3.1-rc3](https://github.com/zerok/webmentiond/compare/v1.3.1-rc2...v1.3.1-rc3) (2025-12-03)
 
 
