@@ -48,7 +48,7 @@ jobs:
         args: --silent build-frontend --frontend-dir frontend export --path ./dist/frontend
 
     - name: Upload frontend
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: frontend
         path: ./dist/frontend
@@ -78,7 +78,7 @@ jobs:
         args: --silent build-binaries --root-dir . --built-frontend ./dist/frontend  --commit-id ${{ github.sha }} --version "${{ needs.release-please.outputs.release_tag }}" --arch arm64 export --path ./dist/backend
 
     - name: Upload binaries
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: backend-arm64
         path: ./dist/backend
@@ -108,7 +108,7 @@ jobs:
         args: --silent build-binaries --root-dir . --built-frontend ./dist/frontend  --commit-id ${{ github.sha }} --version "${{ needs.release-please.outputs.release_tag }}" --arch amd64 export --path ./dist/backend
 
     - name: Upload binaries
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: backend-amd64
         path: ./dist/backend
