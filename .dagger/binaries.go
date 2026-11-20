@@ -12,13 +12,14 @@ func (m *Webmentiond) BuildBinaries(ctx context.Context, rootDir *dagger.Directo
 	goCache := dag.CacheVolume("go-pkg")
 
 	flags := bytes.Buffer{}
-	flags.WriteString("-X 'main.commit=")
-	flags.WriteString(commitID)
-	flags.WriteString("'")
-	flags.WriteString(" -X 'main.version=")
+	// Set version info for prometheus/common/version package
+	flags.WriteString("-X 'github.com/prometheus/common/version.Version=")
 	flags.WriteString(version)
 	flags.WriteString("'")
-	flags.WriteString(" -X 'main.date=")
+	flags.WriteString(" -X 'github.com/prometheus/common/version.Revision=")
+	flags.WriteString(commitID)
+	flags.WriteString("'")
+	flags.WriteString(" -X 'github.com/prometheus/common/version.BuildDate=")
 	flags.WriteString(time.Now().Format(time.RFC3339))
 	flags.WriteString("'")
 	finalFlags := flags.String()

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/prometheus/common/version"
 	"github.com/rs/zerolog"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,10 +14,6 @@ var logger zerolog.Logger
 var cfg *viper.Viper
 var configFilePath string
 var showVersion bool
-
-var version string
-var commit string
-var date string
 
 func newRootCmd() Command {
 	var verbose bool
@@ -39,7 +36,7 @@ func newRootCmd() Command {
 			}
 
 			if showVersion {
-				fmt.Printf("Version: %s (commit: %s, built on %s)\n", version, commit, date)
+				fmt.Println(version.Print("webmentiond"))
 				os.Exit(0)
 			}
 		},
